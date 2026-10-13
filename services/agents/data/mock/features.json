@@ -1,0 +1,89 @@
+{
+  "_comment": "Mock feature store for TRUSTSHIELD_MODE=mock. SYNTHETIC data. Ronak's generator (data/) regenerates this file in the same schema.",
+  "schema_version": 1,
+  "payers": {
+    "payer_demo_001": {
+      "median_amount": 1800,
+      "avg_daily_txn": 3,
+      "txn_count_1h": 0,
+      "txn_count_24h": 2
+    },
+    "payer_demo_002": {
+      "median_amount": 2000,
+      "avg_daily_txn": 2,
+      "txn_count_1h": 0,
+      "txn_count_24h": 1
+    },
+    "payer_demo_003": {
+      "median_amount": 650,
+      "avg_daily_txn": 4,
+      "txn_count_1h": 1,
+      "txn_count_24h": 3
+    },
+    "payer_demo_004": {
+      "median_amount": 3200,
+      "avg_daily_txn": 2,
+      "txn_count_1h": 4,
+      "txn_count_24h": 11
+    }
+  },
+  "payees": {
+    "kyc.helpdesk.verify@synthbank": {
+      "flags": [
+        "vpa_created_recently"
+      ],
+      "reported_links": 1,
+      "fan_in_24h": 9,
+      "is_merchant": false
+    },
+    "refund.desk.help@synthbank": {
+      "flags": [
+        "reported_by_users",
+        "vpa_created_recently"
+      ],
+      "reported_links": 3,
+      "fan_in_24h": 14,
+      "is_merchant": false
+    },
+    "prize.release.desk@synthbank": {
+      "flags": [
+        "reported_by_users"
+      ],
+      "reported_links": 2,
+      "fan_in_24h": 6,
+      "is_merchant": false
+    },
+    "landlord.sharma@synthbank": {
+      "flags": [],
+      "reported_links": 0,
+      "fan_in_24h": 1,
+      "is_merchant": false
+    },
+    "chai.ramesh@synthbank": {
+      "flags": [],
+      "reported_links": 0,
+      "fan_in_24h": 40,
+      "is_merchant": true
+    },
+    "mer.demo0042@synthbank": {
+      "flags": [],
+      "reported_links": 0,
+      "fan_in_24h": 55,
+      "is_merchant": true
+    }
+  },
+  "defaults": {
+    "payer": {
+      "median_amount": null,
+      "avg_daily_txn": 2,
+      "txn_count_1h": 0,
+      "txn_count_24h": 0
+    },
+    "payee": {
+      "flags": [],
+      "reported_links": 0,
+      "fan_in_24h": 0,
+      "is_merchant": false
+    }
+  }
+}

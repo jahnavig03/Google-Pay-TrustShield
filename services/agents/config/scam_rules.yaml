@@ -1,0 +1,80 @@
+# Mock-mode Scam Context classifier (TRUSTSHIELD_MODE=mock): keyword / regex rules.
+# Patterns are matched case-insensitively. Each *distinct* rule that matches adds its weight once.
+#   scam_probability = min(cap, 1 - exp(-rate * Σ weights))
+# Weak, everyday urgency words ("today", "urgent") carry little weight on purpose so that
+# legitimate-but-urgent messages (school fees due today) stay low.
+
+rate: 0.45
+cap: 0.97
+floor: 0.02            # probability when nothing matches (or no message)
+
+rules:
+  # --- urgency / account block ---
+  - {id: account_block, pattern: urgency, weight: 2.5, cue: account_block,
+     regex: '(account|a/c|khata|upi|card|sim|number)\b.{0,40}\b(block|blocked|suspend|suspended|deactivat|frozen|freeze|band)|\b(block|band|suspend)\w*\b.{0,30}\b(account|a/c|khata)'}
+  - {id: service_cutoff, pattern: urgency, weight: 2.0, cue: account_block,
+     regex: '(connection|electricity|bijli|service|number|sim|gas)\b.{0,40}\b(disconnect|cut off|cut|deactivat|block|band)'}
+  - {id: deadline_threat, pattern: urgency, weight: 1.0, cue: deadline_pressure,
+     regex: 'within \d+ (hours?|hrs?|minutes?|mins?)|\b(last chance|final notice|immediately|turant|abhi ke abhi|jaldi karo)\b'}
+  - {id: weak_urgency, pattern: urgency, weight: 0.4, cue: time_pressure,
+     regex: '\b(urgent|urgently|asap|today|jaldi|abhi)\b'}
+
+  # --- fake KYC ---
+  - {id: kyc_update, pattern: fake_kyc, weight: 1.6, cue: kyc_request,
+     regex: '\b(kyc|e-?kyc|re-?kyc|pan (card )?(update|link)|aadhaar (update|link)|re-?verif)\w*'}
+  - {id: verification_account, pattern: fake_kyc, weight: 1.6, cue: pay_to_verify,
+     regex: '(verification|verify|security|safe|holding) (account|a/c|wallet)|pay.{0,20}to (verify|activate|reactivate|unblock)'}
+
+  # --- fake refund / cashback ---
+  - {id: refund_offer, pattern: fake_refund, weight: 2.3, cue: refund_offer,
+     regex: '\b(refund|cashback|cash back|overcharged|charged twice|double (charged|deducted)|paisa wapas|wapas milega|return your money)\b'}
+
+  # --- receive money first / collect request ---
+  - {id: receive_money, pattern: receive_money_first, weight: 2.2, cue: pay_to_receive,
+     regex: '(to receive|for receiving|receive (the )?(money|amount|payment|prize))|(approve|accept).{0,25}(request|collect).{0,25}(receive|get|credit)|(enter|use) (your )?(upi )?pin to (receive|get)|paise (milenge|aa jayenge)|pin daal(o|ke).{0,20}(paise|money)'}
+  - {id: prize_lottery, pattern: receive_money_first, weight: 1.6, cue: prize_bait,
+     regex: '\b(won|winner|lottery|lucky draw|prize|jackpot|reward of|kbc)\b'}
+  - {id: loan_bait, pattern: receive_money_first, weight: 1.4, cue: loan_bait,
+     regex: '\bloan\b.{0,40}\b(approved|sanctioned|pre-?approved)'}
+  - {id: processing_fee, pattern: receive_money_first, weight: 1.2, cue: advance_fee,
+     regex: '(processing|registration|delivery|release|clearance|gst) (fee|charge|charges)'}
+
+  # --- impersonation ---
+  - {id: official_claim, pattern: impersonation, weight: 1.2, cue: authority_claim,
+     regex: '\b(bank security|security team|rbi|reserve bank|npci|customer care|helpdesk|help desk|police|cyber ?cell|cbi|income tax|customs|courier|electricity (board|department)|bijli|army|officer|manager from|head office|trai)\b'}
+  - {id: legal_threat, pattern: impersonation, weight: 1.4, cue: legal_threat,
+     regex: '\b(arrest|legal action|case (is )?registered|warrant|fir\b|penalty|jail)'}
+  - {id: boss_claim, pattern: impersonation, weight: 1.2, cue: authority_claim,
+     regex: '\bthis is (your )?(manager|boss|ceo|director|hr)\b'}
+  - {id: gift_cards, pattern: impersonation, weight: 1.4, cue: gift_card_request,
+     regex: '\bgift ?cards?\b|\bvoucher codes?\b'}
+  - {id: family_impersonation, pattern: impersonation, weight: 1.6, cue: new_number_family,
+     regex: '(this is my new number|my new number|mera naya number|naya number|new number hai|phone (kho|lost|kharab|broke|kharaab))'}
+
+  # --- QR swap ---
+  - {id: qr_receive, pattern: qr_swap, weight: 2.6, cue: scan_to_receive,
+     regex: 'scan.{0,30}(qr|code).{0,60}(receive|get|credit|refund|paise|milenge|aa jayenge)|(receive|get|credit|refund|paise).{0,80}scan.{0,30}(qr|code)|(qr|code).{0,10}scan.{0,40}(receive|paise|milenge|aa jayenge)'}
+  - {id: qr_replaced, pattern: qr_swap, weight: 1.6, cue: replaced_qr,
+     regex: '(new|updated|changed|different|this) qr|qr (has )?(changed|updated)|naya qr'}
+
+  # --- cross-pattern manipulation cues (add probability, never pick the pattern) ---
+  - {id: secrecy, pattern: null, weight: 1.2, cue: secrecy,
+     regex: "(do not|don't|dont|mat) (share|tell|batana|batao)|kisi ko (mat|na) bata|keep (this )?(confidential|secret)"}
+  - {id: credential_request, pattern: null, weight: 2.5, cue: credential_request,
+     regex: '\b(otp|cvv|upi pin|atm pin|mpin|password|card number)\b'}
+  - {id: remote_access, pattern: null, weight: 2.0, cue: remote_access_app,
+     regex: '\b(anydesk|any desk|teamviewer|quicksupport|rustdesk|screen ?share)\b'}
+  - {id: link_click, pattern: null, weight: 0.8, cue: suspicious_link,
+     regex: '(bit\.ly|tinyurl|click (on )?(this|the) link|link par click|http[s]?://)'}
+
+# Tie-break order when two patterns have the same total weight.
+pattern_priority: [receive_money_first, qr_swap, fake_refund, fake_kyc, urgency, impersonation]
+
+safe_next_step:
+  urgency: "Pause. Contact your bank using the number on its official app or card before paying."
+  fake_kyc: "Don't pay to update KYC. Check your KYC status in your bank's official app or at a branch."
+  fake_refund: "Don't pay or approve anything to get a refund. Check the refund with the merchant's official support."
+  receive_money_first: "You never need to pay or approve a request to receive money. Decline the request."
+  impersonation: "Hang up or stop replying, and call the organisation back on a number you find yourself."
+  qr_swap: "Scanning a QR code sends money. Confirm the recipient's name before paying."
+  none: "If anything about this request feels unusual, confirm it with the recipient through a contact you trust."

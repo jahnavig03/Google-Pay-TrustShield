@@ -1,0 +1,65 @@
+# TrustShield risk-fusion config.
+#   R = sigmoid(bias + wA·A + wB·B + wD·D + wL·L + wV·V + wS·S + wN·N),  every x in [0, 1].
+#
+# Orgs override `default` with a deep merge: set TRUSTSHIELD_ORG_ID (or pass org_id) to pick one.
+# Production: these values move to Firestore config so thresholds change without a redeploy.
+#
+# --- Why these default weights (hand-calibrated, synthetic data) -------------------------------
+# * bias = -4.0 puts a "nothing unusual" payment at R ≈ 0.02 (ALLOW).
+# * No single signal can hold a payment on its own: the largest weight (S = 2.6) gives
+#   sigmoid(-1.4) ≈ 0.20. That is what keeps the hard negatives safe:
+#     - big legit rent to a long-standing payee: only A fires (≈0.65 → +1.6)   → R ≈ 0.08 ALLOW
+#     - small payment to a payee added 2 min ago: only B fires (≈1.0 → +2.2)   → R ≈ 0.14 ALLOW
+# * Two strong signals reach WARN, three reach STEP_UP / HOLD:
+#     - scam message + new payee                     → R ≈ 0.62 WARN
+#     - scam message + new payee + 40x amount        → R ≈ 0.95 HOLD
+# * S (scam context) and A (amount deviation) carry the most weight: manipulation shows up as
+#   "unusual amount + pressure message". B (new payee) is close behind. N (mule links) is strong
+#   but sparse. D / L / V are supporting signals: device and location change are common for
+#   genuine users, so they nudge rather than decide.
+# * ₹85,000 demo: A≈0.98, B≈1.0, D=1, S≈0.9, N≈0.76 → logit ≈ +5.7 → R ≈ 0.997 HOLD_AND_ESCALATE.
+# ------------------------------------------------------------------------------------------------
+
+default:
+  bias: -4.0
+  weights:
+    A: 2.5   # amount deviation vs payer's median
+    B: 2.2   # beneficiary risk (age + flags)
+    D: 1.2   # device anomaly
+    L: 0.8   # location anomaly
+    V: 1.0   # velocity
+    S: 2.6   # scam-context probability (Scam Context agent)
+    N: 2.0   # mule-network risk
+
+  # Decision bands on R. Lower bound inclusive: R == warn -> WARN, R == step_up -> STEP_UP, ...
+  thresholds:
+    warn: 0.35
+    step_up: 0.70
+    hold: 0.90
+  case_threshold: 0.70        # R >= this -> analyst_case_required
+
+  signals:
+    min: 3                    # always return at least this many (padded with low-risk signals)
+    max: 5
+    min_contribution: 0.3     # w·x below this only appears as padding
+
+  features:
+    default_median_amount: 2000   # ₹; used when the payer has no history
+    amount_ratio_cap: 50          # amount / median at which A saturates to 1
+    beneficiary_age_tau_minutes: 720   # B_age = exp(-age / tau): 4 min -> 0.99, 1 day -> 0.14
+    beneficiary_flag_weights:
+      reported_by_users: 0.6
+      vpa_created_recently: 0.3
+    velocity_ratio_cap: 5         # 24h count at 5x the usual daily count -> V = 1
+    mule_link_scale: 2.0          # N_links = 1 - exp(-reported_links / scale)
+    mule_fan_in_floor: 3          # unique payers into payee in 24h below this -> no fan-in risk
+    mule_fan_in_span: 10          # ... and floor + span -> fan-in risk 1
+
+orgs:
+  # Example of a stricter org profile (used in tests).
+  demo_strict_bank:
+    thresholds:
+      warn: 0.30
+      step_up: 0.60
+      hold: 0.85
+    case_threshold: 0.60

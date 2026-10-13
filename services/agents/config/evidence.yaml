@@ -1,0 +1,59 @@
+# Static evidence mapping (until the Evidence & Policy agent queries Vertex AI Search).
+# Every PaymentRiskResponse must carry evidence_ids, or gateway Governance blocks the action.
+# All documents below are SYNTHETIC playbooks written for this prototype.
+
+by_risk_type:
+  none: [policy_payment_safety_02]
+  behavioural_anomaly: [policy_payment_safety_02]
+  urgency: [policy_payment_safety_01, policy_kyc_03]
+  fake_kyc: [policy_kyc_03, policy_payment_safety_01]
+  fake_refund: [policy_refund_06]
+  receive_money_first: [policy_collect_07]
+  impersonation: [policy_payment_safety_01]
+  qr_swap: [policy_qr_08]
+  mule_network: [policy_mule_09]
+
+# Added on top of the risk-type evidence for decisions that need an analyst.
+by_decision:
+  STEP_UP_VERIFICATION: [policy_escalation_04]
+  HOLD_AND_ESCALATE: [policy_escalation_04]
+
+fallback: [policy_payment_safety_02]
+
+catalog:
+  policy_payment_safety_01:
+    title: "Customer payment safety playbook (synthetic) §2 — urgency and account-block messages"
+    snippet: "Messages that threaten to block an account unless money is paid immediately are a known manipulation pattern. Advise the customer to pause and verify through official channels."
+    uri: "gs://trustshield-policy-docs/payment_safety_playbook.pdf#s2"
+  policy_payment_safety_02:
+    title: "Customer payment safety playbook (synthetic) §3 — verifying a recipient"
+    snippet: "Before paying a new or unusual recipient, customers should confirm the recipient's details through a contact they already trust."
+    uri: "gs://trustshield-policy-docs/payment_safety_playbook.pdf#s3"
+  policy_kyc_03:
+    title: "KYC update policy (synthetic) §1"
+    snippet: "KYC is never completed by transferring money to an individual or a 'verification' account."
+    uri: "gs://trustshield-policy-docs/kyc_policy.pdf#s1"
+  policy_escalation_04:
+    title: "Fraud operations SOP (synthetic) §4 — holds and escalation"
+    snippet: "A hold or escalation may only be executed after an analyst records an approval decision. Every decision carries an audit ID."
+    uri: "gs://trustshield-policy-docs/fraud_ops_sop.pdf#s4"
+  policy_merchant_05:
+    title: "Merchant acceptance guide (synthetic) §2 — screenshots are not proof of payment"
+    snippet: "Merchants should confirm a credit in their settlement ledger, not rely on a payment screenshot."
+    uri: "gs://trustshield-policy-docs/merchant_guide.pdf#s2"
+  policy_refund_06:
+    title: "Refunds and cashback (synthetic) §1"
+    snippet: "Genuine refunds are credited to the customer; they never require the customer to pay or approve a collect request."
+    uri: "gs://trustshield-policy-docs/refunds.pdf#s1"
+  policy_collect_07:
+    title: "Collect requests (synthetic) §1 — receiving money"
+    snippet: "Receiving money never requires entering a UPI PIN or approving a collect request."
+    uri: "gs://trustshield-policy-docs/collect_requests.pdf#s1"
+  policy_qr_08:
+    title: "QR code safety (synthetic) §1"
+    snippet: "Scanning a QR code is for paying, not receiving. Check that the name shown after scanning matches the intended recipient."
+    uri: "gs://trustshield-policy-docs/qr_safety.pdf#s1"
+  policy_mule_09:
+    title: "Mule account indicators (synthetic) §2"
+    snippet: "Accounts receiving from many unrelated payers in a short window, or sharing devices with reported accounts, are reviewed by fraud operations."
+    uri: "gs://trustshield-policy-docs/mule_indicators.pdf#s2"

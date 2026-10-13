@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trustshield-agents"
+version = "0.1.0"
+description = "TrustShield agent layer: orchestrator, specialist agents, risk-fusion engine."
+requires-python = ">=3.11"
+dependencies = [
+    "trustshield-contracts",
+    "pydantic>=2.7,<3",
+    "pyyaml>=6",
+    "python-dotenv>=1",
+    # ADK 2.x: the orchestrator uses the graph Workflow API (Sequential/ParallelAgent are deprecated).
+    "google-adk>=2.11,<3",
+    "google-genai>=2.30,<3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.23", "ruff>=0.5"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
