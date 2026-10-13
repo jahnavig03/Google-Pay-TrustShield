@@ -1,0 +1,50 @@
+{"id": "msg_urg_01", "lang": "en", "label": "urgency", "is_scam": true, "text": "ALERT: Your bank account will be blocked within 2 hours due to unusual activity. Transfer Rs 9,999 to the security account now to keep it active."}
+{"id": "msg_urg_02", "lang": "en", "label": "urgency", "is_scam": true, "text": "Dear customer, your UPI ID is suspended. To restore immediately pay Rs 4,500 to the link below. Last chance."}
+{"id": "msg_urg_03", "lang": "hinglish", "label": "urgency", "is_scam": true, "text": "Aapka bank account aaj raat band ho jayega. Turant 5000 bhejo warna saara paisa freeze ho jayega."}
+{"id": "msg_urg_04", "lang": "en", "label": "urgency", "is_scam": true, "text": "FINAL NOTICE: your debit card has been deactivated. Pay the reactivation charge of Rs 2,499 within 30 minutes or the account will be frozen."}
+{"id": "msg_urg_05", "lang": "hinglish", "label": "urgency", "is_scam": true, "text": "Sir aapka SIM card 24 ghante me block ho jayega, abhi ke abhi 1999 pay karo is number par."}
+{"id": "msg_urg_06", "lang": "en", "label": "urgency", "is_scam": true, "text": "Your electricity connection will be disconnected tonight at 9.30 pm because your last bill was not updated. Pay Rs 3,200 immediately to the officer's UPI."}
+{"id": "msg_urg_07", "lang": "en", "label": "urgency", "is_scam": true, "text": "Your account shows suspicious login. It will be suspended today unless you move your balance to the safe account we provide. Do not share this with anyone."}
+{"id": "msg_kyc_01", "lang": "en", "label": "fake_kyc", "is_scam": true, "text": "Dear user, your KYC has expired. Pay Rs 10 verification fee to complete e-KYC and avoid service interruption."}
+{"id": "msg_kyc_02", "lang": "en", "label": "fake_kyc", "is_scam": true, "text": "Your PAN card is not linked. Update PAN by paying Rs 1,500 to the verification account given below."}
+{"id": "msg_kyc_03", "lang": "hinglish", "label": "fake_kyc", "is_scam": true, "text": "Aapka KYC pending hai. 99 rupay bhejo is UPI par, KYC update ho jayega."}
+{"id": "msg_kyc_04", "lang": "en", "label": "fake_kyc", "is_scam": true, "text": "Re-KYC required for your wallet. Send Rs 1 to verify your account and then Rs 4,999 refundable security deposit."}
+{"id": "msg_kyc_05", "lang": "en", "label": "fake_kyc", "is_scam": true, "text": "Aadhaar update pending for your bank account. Complete it now by paying the update charge to our KYC desk."}
+{"id": "msg_kyc_06", "lang": "hinglish", "label": "fake_kyc", "is_scam": true, "text": "Bhai aapka e-KYC fail ho gaya hai, re-verify karne ke liye 2000 rupay pay karo verification wallet me."}
+{"id": "msg_kyc_07", "lang": "en", "label": "fake_kyc", "is_scam": true, "text": "Your bank needs to re-verify your account details. Pay Rs 5 to activate verification, then follow the steps in the message."}
+{"id": "msg_ref_01", "lang": "en", "label": "fake_refund", "is_scam": true, "text": "You were charged twice for your order. To receive the refund of Rs 1,499 please accept the collect request we have sent."}
+{"id": "msg_ref_02", "lang": "en", "label": "fake_refund", "is_scam": true, "text": "Your electricity bill was overcharged. Claim your cashback of Rs 850 by paying Rs 1 to confirm your UPI."}
+{"id": "msg_ref_03", "lang": "hinglish", "label": "fake_refund", "is_scam": true, "text": "Madam aapka refund atak gaya hai, paisa wapas milega bas ek request approve kar dijiye."}
+{"id": "msg_ref_04", "lang": "en", "label": "fake_refund", "is_scam": true, "text": "Customer care here. Your flight cancellation refund is ready. Install AnyDesk and pay Rs 10 so we can process the refund to your account."}
+{"id": "msg_ref_05", "lang": "en", "label": "fake_refund", "is_scam": true, "text": "Amount double deducted on your recharge. For refund, pay the same amount once more and both will be returned in 10 minutes."}
+{"id": "msg_ref_06", "lang": "hinglish", "label": "fake_refund", "is_scam": true, "text": "Cashback 2000 ka hai aapke liye, bas 1 rupay bhej ke confirm karo, turant credit hoga."}
+{"id": "msg_ref_07", "lang": "en", "label": "fake_refund", "is_scam": true, "text": "We could not deliver your parcel and want to return your money. Approve the payment request to get your refund."}
+{"id": "msg_rmf_01", "lang": "en", "label": "receive_money_first", "is_scam": true, "text": "Congratulations! You won Rs 25 lakh in the lucky draw. Pay the processing fee of Rs 12,500 to receive the prize."}
+{"id": "msg_rmf_02", "lang": "en", "label": "receive_money_first", "is_scam": true, "text": "I am buying your sofa from the OLX ad. I have sent a request, just enter your UPI PIN to receive the payment."}
+{"id": "msg_rmf_03", "lang": "hinglish", "label": "receive_money_first", "is_scam": true, "text": "Aapke account me 50,000 aa jayenge, bas request accept karo aur pin daal ke confirm karo, paise milenge."}
+{"id": "msg_rmf_04", "lang": "en", "label": "receive_money_first", "is_scam": true, "text": "KBC winner! Your number has won Rs 35 lakh. Send Rs 8,500 GST charge to release the amount."}
+{"id": "msg_rmf_05", "lang": "en", "label": "receive_money_first", "is_scam": true, "text": "Army officer here, I want to pay advance for renting your flat. Approve the collect request to receive Rs 20,000 advance."}
+{"id": "msg_rmf_06", "lang": "hinglish", "label": "receive_money_first", "is_scam": true, "text": "Part time job ka reward 3000 hai. Pehle registration fee 500 bhejo phir paise milenge."}
+{"id": "msg_rmf_07", "lang": "en", "label": "receive_money_first", "is_scam": true, "text": "Your loan of Rs 2,00,000 is approved. Pay the processing charges of Rs 3,999 first to release the loan amount."}
+{"id": "msg_imp_01", "lang": "en", "label": "impersonation", "is_scam": true, "text": "This is Inspector Verma from the cyber cell. A case is registered against your Aadhaar. Pay the clearance amount now or face arrest."}
+{"id": "msg_imp_02", "lang": "hinglish", "label": "impersonation", "is_scam": true, "text": "Mummy ye mera naya number hai, purana phone kho gaya. Jaldi 8000 bhej do, baad me batata hoon."}
+{"id": "msg_imp_03", "lang": "en", "label": "impersonation", "is_scam": true, "text": "Customs department: a parcel in your name contains illegal items. Pay the penalty to this account to avoid legal action."}
+{"id": "msg_imp_04", "lang": "en", "label": "impersonation", "is_scam": true, "text": "Hi, this is your manager. I am in a meeting, need you to buy gift cards worth Rs 10,000 and send the codes. Keep this confidential."}
+{"id": "msg_imp_05", "lang": "en", "label": "impersonation", "is_scam": true, "text": "Income Tax Department: your refund is on hold due to mismatch. Pay the verification fee to the officer's account to release it."}
+{"id": "msg_imp_06", "lang": "hinglish", "label": "impersonation", "is_scam": true, "text": "Main bank ke head office se bol raha hoon, aapke account me problem hai, OTP batao aur 1 rupay bhejo."}
+{"id": "msg_qr_01", "lang": "en", "label": "qr_swap", "is_scam": true, "text": "To receive the payment for your old laptop, please scan this QR code and enter the amount."}
+{"id": "msg_qr_02", "lang": "hinglish", "label": "qr_swap", "is_scam": true, "text": "Bhaiya ye QR scan karo, paise aapke account me aa jayenge."}
+{"id": "msg_qr_03", "lang": "en", "label": "qr_swap", "is_scam": true, "text": "Shop notice: our QR has changed. Please pay using the new QR sticker pasted at the counter."}
+{"id": "msg_qr_04", "lang": "en", "label": "qr_swap", "is_scam": true, "text": "Your refund will be credited after you scan the QR code we have sent on WhatsApp."}
+{"id": "msg_qr_05", "lang": "en", "label": "qr_swap", "is_scam": true, "text": "Hello, I have updated our society maintenance QR. Use this QR for October payments."}
+{"id": "msg_qr_06", "lang": "hinglish", "label": "qr_swap", "is_scam": true, "text": "Naya QR bheja hai, purana wala band hai. Isi par 1200 bhejo."}
+{"id": "msg_neg_01", "lang": "en", "label": "none", "is_scam": false, "hard_negative": true, "text": "Hi, school fee of Rs 15,000 for Term 2 is due today. Please pay through the school app to avoid a late fee."}
+{"id": "msg_neg_02", "lang": "en", "label": "none", "is_scam": false, "hard_negative": true, "text": "Reminder: rent of Rs 22,000 is due on the 5th. Please transfer to the usual account. Thanks!"}
+{"id": "msg_neg_03", "lang": "hinglish", "label": "none", "is_scam": false, "hard_negative": true, "text": "Bhai kal ke dinner ka split 850 aaya, jaldi bhej dena aaj hi, card bill aa gaya hai."}
+{"id": "msg_neg_04", "lang": "en", "label": "none", "is_scam": false, "hard_negative": true, "text": "Your electricity bill of Rs 2,340 is due on 20 Oct. Pay via the official app or website."}
+{"id": "msg_neg_05", "lang": "en", "label": "none", "is_scam": false, "hard_negative": true, "text": "Urgent: hospital deposit needed for dad's surgery tomorrow morning, I'm at the counter. Can you send Rs 30,000 to my account now?"}
+{"id": "msg_neg_06", "lang": "hinglish", "label": "none", "is_scam": false, "hard_negative": true, "text": "Beta flight ke ticket ke liye 12,000 abhi bhej do, price badh raha hai."}
+{"id": "msg_neg_07", "lang": "en", "label": "none", "is_scam": false, "hard_negative": true, "text": "Your order #4471 is out for delivery. Please keep Rs 1,250 ready for cash on delivery or pay by UPI on arrival."}
+{"id": "msg_neg_08", "lang": "en", "label": "none", "is_scam": false, "hard_negative": true, "text": "Last date for the marathon registration is today. Entry fee Rs 1,500, pay on the official event site."}
+{"id": "msg_neg_09", "lang": "en", "label": "none", "is_scam": false, "hard_negative": true, "text": "Hey, it's Priya. Can you pay the cab driver Rs 640? My phone battery is about to die."}
+{"id": "msg_neg_10", "lang": "hinglish", "label": "none", "is_scam": false, "hard_negative": true, "text": "Sir maintenance ka 3,500 is mahine ka pending hai, society account me transfer kar dijiye jab time mile."}
