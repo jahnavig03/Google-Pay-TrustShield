@@ -86,6 +86,7 @@ Firebase CLI, which is what keeps the Cloud Build test step simple.
 
 ```bash
 pytest                       # 74 tests, no emulator needed
+                             # 75 with the Firestore emulator running (see below)
 ```
 
 `tests/test_payment_flow.py` drives the ₹85,000 fixture
@@ -96,9 +97,14 @@ pending case. The same flow runs against the real Firestore emulator in
 reachable:
 
 ```bash
-firebase emulators:start --only firestore        # needs Java 21+
-FIRESTORE_EMULATOR_HOST=localhost:8080 pytest    # use 8081 if 8080 is taken
+firebase emulators:start --only firestore        # needs Java 21+, reads firebase.json
+FIRESTORE_EMULATOR_HOST=localhost:8080 pytest    # 75 passed, 0 skipped
 ```
+
+Verified on 14 Oct 2026 against firebase-tools 15.33.0 and the Firestore emulator v1.22.0: the
+₹85,000 fixture writes a real `audit_log` row (`payment_risk_decision`, `HOLD_AND_ESCALATE`,
+`needs_approval`) and a `pending_approval` case. Change the port in `firebase.json` and `.env`
+together if 8080 is taken.
 
 ## Container
 
