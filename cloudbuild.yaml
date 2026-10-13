@@ -1,0 +1,106 @@
+# Cloud Build: test -> build -> push -> deploy the gateway to Cloud Run.
+# Trigger: push to main, built from the repo root (the image needs shared/contracts and
+# services/agents as well as services/gateway).
+#
+# Cost rule (team decision, no extra billing): --min-instances 0 and --max-instances 2 until
+# judging. Set min-instances 1 only on 17-18 Oct, then put it back to 0.
+
+substitutions:
+  _REGION: asia-south1
+  _REPO: trustshield
+  _SERVICE: trustshield-gateway
+  _GEMINI_FAST_MODEL: gemini-2.5-flash
+  _GEMINI_FAST_THINKING_BUDGET: "0"
+  _MIN_INSTANCES: "0"
+  _MAX_INSTANCES: "2"
+
+options:
+  # Default machine type on purpose: the cost rule rules out paying for a bigger builder.
+  logging: CLOUD_LOGGING_ONLY
+
+# No top-level `images:` key: that pushes after every step, i.e. after the deploy. The explicit
+# push step below runs before the deploy instead.
+
+steps:
+  # --------------------------------------------------------------------------------------
+  # Tests. All three suites run in mock mode: no GCP credentials, no emulators, no Java.
+  # --------------------------------------------------------------------------------------
+  - id: test
+    name: python:3.11-slim
+    env:
+      - TRUSTSHIELD_MODE=mock
+      - TRUSTSHIELD_DOC_STORE=memory
+      - TRUSTSHIELD_PUBLISHER=noop
+      - PIP_DISABLE_PIP_VERSION_CHECK=1
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        pip install --no-cache-dir --prefer-binary --retries 5 --timeout 60 \
+          -r services/gateway/requirements.txt \
+          -r services/agents/requirements.txt
+        pip install --no-cache-dir --no-deps -e shared/contracts -e services/agents
+        echo "--- shared/contracts ---" && (cd shared/contracts && python -m pytest -q)
+        echo "--- services/agents ---"  && (cd services/agents  && python -m pytest -q)
+        echo "--- services/gateway ---" && (cd services/gateway && python -m pytest -q)
+
+  # --------------------------------------------------------------------------------------
+  # Image. Built from the repo root with the gateway's Dockerfile.
+  # --------------------------------------------------------------------------------------
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    waitFor: [test]
+    args:
+      - build
+      - -f
+      - services/gateway/Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/gateway:${SHORT_SHA}
+      - -t
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/gateway:latest
+      - .
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    waitFor: [build]
+    args: [push, --all-tags, "${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/gateway"]
+
+  # --------------------------------------------------------------------------------------
+  # Deploy. gcp mode: real Gemini, Firestore and Pub/Sub.
+  # --------------------------------------------------------------------------------------
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    waitFor: [push]
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO}/gateway:${SHORT_SHA}
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --min-instances=${_MIN_INSTANCES}
+      - --max-instances=${_MAX_INSTANCES}
+      - --port=8080
+      - --set-env-vars=TRUSTSHIELD_MODE=gcp,GCP_PROJECT_ID=${PROJECT_ID},GCP_REGION=${_REGION},GEMINI_FAST_MODEL=${_GEMINI_FAST_MODEL},GEMINI_FAST_THINKING_BUDGET=${_GEMINI_FAST_THINKING_BUDGET}
+
+  # --------------------------------------------------------------------------------------
+  # Post-deploy check: the service must answer /health before the build is called green.
+  # --------------------------------------------------------------------------------------
+  - id: smoke
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    waitFor: [deploy]
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        set -euo pipefail
+        url="$(gcloud run services describe ${_SERVICE} --region ${_REGION} \
+                 --format='value(status.url)')"
+        echo "service url: $$url"
+        curl -fsS --retry 5 --retry-delay 3 "$$url/health"
+        echo
+
+timeout: 1800s
