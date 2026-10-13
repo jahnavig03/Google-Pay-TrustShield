@@ -106,6 +106,38 @@ Expect `HOLD_AND_ESCALATE` with a non-empty `audit_id` and `case_id`, and a new 
 Firestore `audit_log` collection. Post the URL in the team chat so Sameer can set
 `VITE_API_BASE_URL`.
 
+## Local emulators
+
+`firebase.json` at the repo root configures the Firestore emulator on 8080, the Pub/Sub emulator
+on 8085 and the emulator UI on 4000, with `singleProjectMode` on. `.firebaserc` points at
+`qualified-sun-511214-t1`, and `firestore.rules` denies every client request: the gateway reaches
+Firestore through the server SDK, which bypasses rules, so nothing should ever talk to Firestore
+directly from a browser.
+
+```bash
+firebase emulators:start --only firestore
+FIRESTORE_EMULATOR_HOST=localhost:8080 pytest     # in services/gateway
+```
+
+Change the port in `firebase.json` and in `.env` together if 8080 is taken.
+
+### Java on a locked-down Mac
+
+firebase-tools 15 needs Java 21+, and the Temurin `.pkg` installer needs admin rights that a
+managed laptop may not grant. The `.pkg` is only an archive, so you can unpack it into your home
+folder instead, with no admin at all:
+
+```bash
+pkgutil --expand-full ~/Downloads/OpenJDK*.pkg /tmp/jdkx
+mkdir -p ~/Library/Java/JavaVirtualMachines
+cp -R /tmp/jdkx/*/Payload/Library/Java/JavaVirtualMachines/*.jdk ~/Library/Java/JavaVirtualMachines/
+java -version
+```
+
+macOS looks in `~/Library/Java/JavaVirtualMachines` automatically, so nothing else needs setting.
+Deleting that folder undoes it. `npm install -g firebase-tools` needs no admin either when node
+comes from nvm, because the global prefix is already inside your home directory.
+
 ## Cost rule
 
 Team decision, no extra billing: `--min-instances 0` and `--max-instances 2` until judging.

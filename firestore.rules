@@ -1,0 +1,15 @@
+rules_version = '2';
+
+// TrustShield writes audit_log, cases and approvals only through the gateway, which uses the
+// Firestore server SDK. Server SDKs bypass these rules, so denying every client request is the
+// correct posture: nothing should reach Firestore directly from a browser or a mobile app.
+//
+// The audit log is append-only by design (governance rule 4). That is enforced in the gateway,
+// and these rules make sure no client can get near it either way.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
