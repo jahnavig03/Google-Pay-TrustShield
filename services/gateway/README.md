@@ -85,7 +85,7 @@ Firebase CLI, which is what keeps the Cloud Build test step simple.
 ## Tests
 
 ```bash
-pytest                       # 68 tests, no emulator needed
+pytest                       # 74 tests, no emulator needed
 ```
 
 `tests/test_payment_flow.py` drives the ₹85,000 fixture

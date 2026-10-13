@@ -76,14 +76,9 @@ async def evaluate_payment_risk(
             },
         ) from blocked
 
+    # Rule 4 first: the decision is audited before anything acts on it, so a later failure
+    # cannot leave a decision with no audit row.
     resp.audit_id = new_audit_id()
-
-    if resp.analyst_case_required:
-        case = cases_service.build_case(req, resp)
-        await cases_service.save_case(store, case, req)
-        await publisher.publish(cases_topic(), {"case_id": case.case_id})
-        resp.case_id = case.case_id
-
     await write_audit(
         store,
         audit_id=resp.audit_id,
@@ -98,4 +93,16 @@ async def evaluate_payment_risk(
         governance_outcome=verdict.outcome,
         reason=verdict.reason,
     )
+
+    if resp.analyst_case_required:
+        case = cases_service.build_case(req, resp)
+        await cases_service.save_case(store, case, req)
+        resp.case_id = case.case_id
+        try:
+            await publisher.publish(cases_topic(), {"case_id": case.case_id})
+        except Exception:
+            # The case is already in Firestore, which is what the analyst UI reads. A failed
+            # notification is worth shouting about but must not fail the customer's payment.
+            log.exception("could not publish %s to the %s topic", case.case_id, cases_topic())
+
     return resp
