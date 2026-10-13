@@ -1,0 +1,71 @@
+{
+  "_story": "Demo 1 — ₹85,000 'your account will be blocked' scam. Synthetic data only. expected_response = agents output (mock mode) + gateway-assigned case_id / audit_id.",
+  "request": {
+    "transaction_id": "TXN-DEMO1-85000",
+    "amount": 85000,
+    "currency": "INR",
+    "payer_id": "payer_demo_001",
+    "payee_vpa": "kyc.helpdesk.verify@synthbank",
+    "beneficiary_age_minutes": 4,
+    "device_changed": true,
+    "location_changed": false,
+    "message_context": "Dear Customer, your bank account will be BLOCKED today because your KYC is pending. To keep it active, transfer Rs 85,000 to the verification account immediately. This is urgent - do not share this message. - Bank Security Team",
+    "attachment_uri": null
+  },
+  "expected_response": {
+    "risk_score": 0.9972,
+    "decision": "HOLD_AND_ESCALATE",
+    "risk_type": "urgency",
+    "customer_message": "We've paused this payment so you can check it first. It has signs we often see in messages that create urgency, such as a warning that an account will be blocked. Banks never ask you to transfer money to keep an account active or to update KYC. Please don't proceed until you've verified the request through your bank's official app or helpline.",
+    "analyst_case_required": true,
+    "evidence_ids": [
+      "policy_payment_safety_01",
+      "policy_kyc_03",
+      "policy_escalation_04"
+    ],
+    "top_signals": [
+      {
+        "code": "scam_context",
+        "label": "Urgent message",
+        "plain_explanation": "The message linked to this payment says your account will be blocked unless you pay now.",
+        "contribution": 2.52
+      },
+      {
+        "code": "amount_deviation",
+        "label": "Unusually large amount",
+        "plain_explanation": "This amount is about 47 times your usual payment of ₹1,800.",
+        "contribution": 2.46
+      },
+      {
+        "code": "new_beneficiary",
+        "label": "New recipient",
+        "plain_explanation": "The recipient was added 4 minutes ago.",
+        "contribution": 2.19
+      },
+      {
+        "code": "mule_network",
+        "label": "Recipient linked to reported accounts",
+        "plain_explanation": "The recipient's account is linked to other accounts that were recently reported.",
+        "contribution": 1.51
+      },
+      {
+        "code": "device_anomaly",
+        "label": "New device",
+        "plain_explanation": "This payment is being made from a device you haven't used before.",
+        "contribution": 1.2
+      }
+    ],
+    "safe_actions": [
+      {
+        "code": "cancel_payment",
+        "label": "Cancel this payment"
+      },
+      {
+        "code": "contact_bank_official",
+        "label": "Call your bank using the number on its official app or card"
+      }
+    ],
+    "case_id": "CASE-TXN-DEMO1-85000",
+    "audit_id": "AUD-DEMO1-0001"
+  }
+}

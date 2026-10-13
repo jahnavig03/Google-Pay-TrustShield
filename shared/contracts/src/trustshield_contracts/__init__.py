@@ -1,0 +1,71 @@
+"""TrustShield API contract (single source of truth for request/response shapes)."""
+
+from .cases import (
+    NOT_COVERED_BY_POLICY,
+    AnalystAction,
+    AnalystDecision,
+    AnalystDecisionRequest,
+    AuditRecord,
+    Case,
+    CaseAnswer,
+    CaseDecisionResponse,
+    CaseListResponse,
+    CaseQuestion,
+    CaseStatus,
+    CaseSummary,
+    EntityType,
+    GovernanceOutcome,
+    LinkedEntity,
+    PolicyCitation,
+    TimelineEvent,
+)
+from .merchant import (
+    ExtractedPaymentDetails,
+    MerchantVerifyRequest,
+    MerchantVerifyResponse,
+    PaymentStatus,
+    RiskLevel,
+)
+from .payment import (
+    Decision,
+    PaymentRiskRequest,
+    PaymentRiskResponse,
+    RiskType,
+    SafeAction,
+    SafeActionCode,
+    Signal,
+)
+
+__version__ = "0.1.0"
+
+__all__ = [
+    "NOT_COVERED_BY_POLICY",
+    "AnalystAction",
+    "AnalystDecision",
+    "AnalystDecisionRequest",
+    "AuditRecord",
+    "Case",
+    "CaseAnswer",
+    "CaseDecisionResponse",
+    "CaseListResponse",
+    "CaseQuestion",
+    "CaseStatus",
+    "CaseSummary",
+    "Decision",
+    "EntityType",
+    "ExtractedPaymentDetails",
+    "GovernanceOutcome",
+    "LinkedEntity",
+    "MerchantVerifyRequest",
+    "MerchantVerifyResponse",
+    "PaymentRiskRequest",
+    "PaymentRiskResponse",
+    "PaymentStatus",
+    "PolicyCitation",
+    "RiskLevel",
+    "RiskType",
+    "SafeAction",
+    "SafeActionCode",
+    "Signal",
+    "TimelineEvent",
+]

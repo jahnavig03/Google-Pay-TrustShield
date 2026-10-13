@@ -1,0 +1,1147 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "TrustShield API",
+    "description": "Prototype simulator — synthetic data. Not affiliated with Google Pay.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/payment-risk/evaluate": {
+      "post": {
+        "tags": [
+          "paysafe"
+        ],
+        "summary": "Score a payment and return allow / warn / step-up / hold",
+        "operationId": "evaluatePaymentRisk",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentRiskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentRiskResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/merchant/payment-verify": {
+      "post": {
+        "tags": [
+          "payguard"
+        ],
+        "summary": "Check a payment screenshot against the merchant ledger",
+        "operationId": "verifyMerchantPayment",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MerchantVerifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantVerifyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases": {
+      "get": {
+        "tags": [
+          "investigator"
+        ],
+        "summary": "List analyst cases",
+        "operationId": "listCases",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}": {
+      "get": {
+        "tags": [
+          "investigator"
+        ],
+        "summary": "Get one case with timeline, links and citations",
+        "operationId": "getCase",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Case"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/ask": {
+      "post": {
+        "tags": [
+          "investigator"
+        ],
+        "summary": "Grounded Q&A over a case",
+        "operationId": "askCase",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseQuestion"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseAnswer"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/decision": {
+      "post": {
+        "tags": [
+          "investigator"
+        ],
+        "summary": "Record the analyst's decision (human approval)",
+        "operationId": "decideCase",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalystDecisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseDecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalystAction": {
+        "type": "string",
+        "enum": [
+          "approve_escalation",
+          "customer_outreach",
+          "close"
+        ],
+        "title": "AnalystAction"
+      },
+      "AnalystDecision": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/AnalystAction"
+          },
+          "analyst_id": {
+            "type": "string",
+            "title": "Analyst Id"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "decided_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Decided At"
+          },
+          "audit_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audit Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "analyst_id",
+          "reason",
+          "decided_at"
+        ],
+        "title": "AnalystDecision"
+      },
+      "AnalystDecisionRequest": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/AnalystAction"
+          },
+          "analyst_id": {
+            "type": "string",
+            "title": "Analyst Id"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action",
+          "analyst_id",
+          "reason"
+        ],
+        "title": "AnalystDecisionRequest"
+      },
+      "Case": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CaseStatus",
+            "default": "open"
+          },
+          "risk_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Risk Score"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/Decision"
+          },
+          "risk_type": {
+            "type": "string",
+            "title": "Risk Type"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "top_signals": {
+            "items": {
+              "$ref": "#/components/schemas/Signal"
+            },
+            "type": "array",
+            "title": "Top Signals"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/TimelineEvent"
+            },
+            "type": "array",
+            "title": "Timeline"
+          },
+          "linked_entities": {
+            "items": {
+              "$ref": "#/components/schemas/LinkedEntity"
+            },
+            "type": "array",
+            "title": "Linked Entities"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyCitation"
+            },
+            "type": "array",
+            "title": "Citations"
+          },
+          "recommended_action": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalystAction"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "missing_evidence": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Evidence"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Ids"
+          },
+          "analyst_decision": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AnalystDecision"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_id",
+          "transaction_id",
+          "created_at",
+          "risk_score",
+          "decision",
+          "risk_type",
+          "summary"
+        ],
+        "title": "Case"
+      },
+      "CaseAnswer": {
+        "properties": {
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "citations": {
+            "items": {
+              "$ref": "#/components/schemas/PolicyCitation"
+            },
+            "type": "array",
+            "title": "Citations"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer"
+        ],
+        "title": "CaseAnswer",
+        "description": "Grounded answer. With no retrieved citations the answer is NOT_COVERED_BY_POLICY."
+      },
+      "CaseDecisionResponse": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CaseStatus"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/AnalystDecision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_id",
+          "status",
+          "decision"
+        ],
+        "title": "CaseDecisionResponse"
+      },
+      "CaseListResponse": {
+        "properties": {
+          "cases": {
+            "items": {
+              "$ref": "#/components/schemas/CaseSummary"
+            },
+            "type": "array",
+            "title": "Cases"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cases"
+        ],
+        "title": "CaseListResponse"
+      },
+      "CaseQuestion": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Question",
+            "examples": [
+              "Why was this payment flagged?"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "question"
+        ],
+        "title": "CaseQuestion"
+      },
+      "CaseStatus": {
+        "type": "string",
+        "enum": [
+          "open",
+          "pending_approval",
+          "escalated",
+          "customer_outreach",
+          "closed"
+        ],
+        "title": "CaseStatus"
+      },
+      "CaseSummary": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CaseStatus"
+          },
+          "risk_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Risk Score"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/Decision"
+          },
+          "risk_type": {
+            "type": "string",
+            "title": "Risk Type"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "payee_vpa": {
+            "type": "string",
+            "title": "Payee Vpa"
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_id",
+          "transaction_id",
+          "created_at",
+          "status",
+          "risk_score",
+          "decision",
+          "risk_type",
+          "amount",
+          "payee_vpa"
+        ],
+        "title": "CaseSummary",
+        "description": "Row in the analyst case list."
+      },
+      "Decision": {
+        "type": "string",
+        "enum": [
+          "ALLOW",
+          "WARN",
+          "STEP_UP_VERIFICATION",
+          "HOLD_AND_ESCALATE"
+        ],
+        "title": "Decision",
+        "description": "Customer-facing outcome. Thresholds on R live in config, not here."
+      },
+      "EntityType": {
+        "type": "string",
+        "enum": [
+          "account",
+          "vpa",
+          "device",
+          "phone",
+          "merchant"
+        ],
+        "title": "EntityType"
+      },
+      "ExtractedPaymentDetails": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "txn_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Txn Id"
+          },
+          "vpa": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vpa"
+          },
+          "timestamp": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "title": "ExtractedPaymentDetails",
+        "description": "What OCR / Gemini vision read off the screenshot. Any field may be unreadable."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LinkedEntity": {
+        "properties": {
+          "entity_type": {
+            "$ref": "#/components/schemas/EntityType"
+          },
+          "entity_id": {
+            "type": "string",
+            "title": "Entity Id"
+          },
+          "relation": {
+            "type": "string",
+            "title": "Relation",
+            "examples": [
+              "payee",
+              "shares_device_with_payee"
+            ]
+          },
+          "risk_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "entity_type",
+          "entity_id",
+          "relation"
+        ],
+        "title": "LinkedEntity"
+      },
+      "MerchantVerifyRequest": {
+        "properties": {
+          "merchant_id": {
+            "type": "string",
+            "title": "Merchant Id"
+          },
+          "uploaded_screenshot": {
+            "type": "string",
+            "title": "Uploaded Screenshot",
+            "description": "gs:// or https:// URI of the screenshot, or a data: URI with base64 image."
+          },
+          "claimed_amount": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Claimed Amount"
+          },
+          "claimed_transaction_id": {
+            "type": "string",
+            "title": "Claimed Transaction Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "merchant_id",
+          "uploaded_screenshot",
+          "claimed_amount",
+          "claimed_transaction_id"
+        ],
+        "title": "MerchantVerifyRequest"
+      },
+      "MerchantVerifyResponse": {
+        "properties": {
+          "payment_status": {
+            "$ref": "#/components/schemas/PaymentStatus"
+          },
+          "risk_level": {
+            "$ref": "#/components/schemas/RiskLevel"
+          },
+          "extracted": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExtractedPaymentDetails"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recommended_action": {
+            "type": "string",
+            "title": "Recommended Action"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "audit_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audit Id",
+            "description": "Filled in by gateway Governance."
+          }
+        },
+        "type": "object",
+        "required": [
+          "payment_status",
+          "risk_level",
+          "recommended_action",
+          "explanation"
+        ],
+        "title": "MerchantVerifyResponse"
+      },
+      "PaymentRiskRequest": {
+        "properties": {
+          "transaction_id": {
+            "type": "string",
+            "title": "Transaction Id"
+          },
+          "amount": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Amount"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "INR"
+          },
+          "payer_id": {
+            "type": "string",
+            "title": "Payer Id"
+          },
+          "payee_vpa": {
+            "type": "string",
+            "title": "Payee Vpa"
+          },
+          "beneficiary_age_minutes": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Beneficiary Age Minutes"
+          },
+          "device_changed": {
+            "type": "boolean",
+            "title": "Device Changed",
+            "default": false
+          },
+          "location_changed": {
+            "type": "boolean",
+            "title": "Location Changed",
+            "default": false
+          },
+          "message_context": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Context"
+          },
+          "attachment_uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attachment Uri",
+            "description": "gs:// or https:// URI of an uploaded screenshot, QR or transcript."
+          }
+        },
+        "type": "object",
+        "required": [
+          "transaction_id",
+          "amount",
+          "payer_id",
+          "payee_vpa",
+          "beneficiary_age_minutes"
+        ],
+        "title": "PaymentRiskRequest",
+        "description": "Compatible with the gateway's original request; only optional fields are added."
+      },
+      "PaymentRiskResponse": {
+        "properties": {
+          "risk_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Risk Score"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/Decision"
+          },
+          "risk_type": {
+            "type": "string",
+            "title": "Risk Type",
+            "description": "One of RiskType where possible."
+          },
+          "customer_message": {
+            "type": "string",
+            "title": "Customer Message"
+          },
+          "analyst_case_required": {
+            "type": "boolean",
+            "title": "Analyst Case Required"
+          },
+          "evidence_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Evidence Ids"
+          },
+          "top_signals": {
+            "items": {
+              "$ref": "#/components/schemas/Signal"
+            },
+            "type": "array",
+            "maxItems": 5,
+            "title": "Top Signals"
+          },
+          "safe_actions": {
+            "items": {
+              "$ref": "#/components/schemas/SafeAction"
+            },
+            "type": "array",
+            "title": "Safe Actions"
+          },
+          "case_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Case Id"
+          },
+          "audit_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audit Id",
+            "description": "Filled in by gateway Governance."
+          }
+        },
+        "type": "object",
+        "required": [
+          "risk_score",
+          "decision",
+          "risk_type",
+          "customer_message",
+          "analyst_case_required"
+        ],
+        "title": "PaymentRiskResponse",
+        "description": "Decision returned to the customer app.\n\nOriginal gateway keys: risk_score, decision, risk_type, customer_message,\nanalyst_case_required, evidence_ids. Everything else is additive and has a default."
+      },
+      "PaymentStatus": {
+        "type": "string",
+        "enum": [
+          "verified",
+          "pending",
+          "inconsistent",
+          "not_found_in_ledger",
+          "suspicious"
+        ],
+        "title": "PaymentStatus"
+      },
+      "PolicyCitation": {
+        "properties": {
+          "evidence_id": {
+            "type": "string",
+            "title": "Evidence Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "snippet": {
+            "type": "string",
+            "title": "Snippet"
+          },
+          "uri": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uri"
+          }
+        },
+        "type": "object",
+        "required": [
+          "evidence_id",
+          "title",
+          "snippet"
+        ],
+        "title": "PolicyCitation",
+        "description": "A retrieved policy passage. Every policy claim must point at one of these."
+      },
+      "RiskLevel": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high"
+        ],
+        "title": "RiskLevel"
+      },
+      "SafeAction": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/SafeActionCode"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "examples": [
+              "Cancel this payment"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "label"
+        ],
+        "title": "SafeAction"
+      },
+      "SafeActionCode": {
+        "type": "string",
+        "enum": [
+          "cancel_payment",
+          "verify_recipient",
+          "report_scam",
+          "contact_bank_official",
+          "proceed"
+        ],
+        "title": "SafeActionCode"
+      },
+      "Signal": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "examples": [
+              "new_beneficiary"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "examples": [
+              "New recipient"
+            ]
+          },
+          "plain_explanation": {
+            "type": "string",
+            "title": "Plain Explanation",
+            "examples": [
+              "The recipient was added 4 minutes ago."
+            ]
+          },
+          "contribution": {
+            "type": "number",
+            "title": "Contribution"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "label",
+          "plain_explanation",
+          "contribution"
+        ],
+        "title": "Signal",
+        "description": "One explained risk signal. ``contribution`` is w_i·x_i from the risk engine."
+      },
+      "TimelineEvent": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type",
+            "examples": [
+              "message_received",
+              "beneficiary_added",
+              "payment_initiated"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "evidence_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evidence Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "event_type",
+          "description"
+        ],
+        "title": "TimelineEvent"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

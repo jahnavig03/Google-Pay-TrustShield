@@ -1,0 +1,17 @@
+{
+  "_story": "Demo 3 — a customer shows a merchant a ₹12,000 'payment successful' screenshot that never settled. Synthetic data only.",
+  "request": {
+    "merchant_id": "MER-DEMO-0042",
+    "uploaded_screenshot": "gs://trustshield-demo-uploads/demo3/payment_screenshot_12000.png",
+    "claimed_amount": 12000,
+    "claimed_transaction_id": "428913570012"
+  },
+  "expected_response": {
+    "payment_status": "suspicious",
+    "risk_level": "high",
+    "extracted": {"amount": 12000, "txn_id": "428913570012", "vpa": "mer.demo0042@synthbank", "timestamp": "2026-10-13T14:22:00+05:30"},
+    "recommended_action": "Hold the goods for now. Check your settlement list in your merchant app, or ask the customer to pay again while you watch for the credit.",
+    "explanation": "No ₹12,000 credit with transaction ID 428913570012 appears in your ledger. The screenshot's timestamp is 3 minutes after the time it was shown, and the amount text uses a different font from the rest of the receipt — both are signs the image may have been edited.",
+    "audit_id": "AUD-DEMO3-0003"
+  }
+}

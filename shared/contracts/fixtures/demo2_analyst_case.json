@@ -1,0 +1,211 @@
+{
+  "_story": "Demo 2 — the analyst opens the auto-created case for the ₹85,000 payment, asks why it was flagged, and approves escalation. Synthetic data only.",
+  "case": {
+    "case_id": "CASE-TXN-DEMO1-85000",
+    "transaction_id": "TXN-DEMO1-85000",
+    "created_at": "2026-10-13T10:13:05+05:30",
+    "status": "pending_approval",
+    "risk_score": 0.9972,
+    "decision": "HOLD_AND_ESCALATE",
+    "risk_type": "urgency",
+    "summary": "A ₹85,000 payment (about 47x the payer's median) to a recipient added 4 minutes earlier, from a new device, minutes after an SMS claiming the account would be blocked over pending KYC. The payee VPA shares a device with another recently reported VPA.",
+    "top_signals": [
+      {
+        "code": "scam_context",
+        "label": "Urgent message",
+        "plain_explanation": "The message linked to this payment says your account will be blocked unless you pay now.",
+        "contribution": 2.52
+      },
+      {
+        "code": "amount_deviation",
+        "label": "Unusually large amount",
+        "plain_explanation": "This amount is about 47 times your usual payment of ₹1,800.",
+        "contribution": 2.46
+      },
+      {
+        "code": "new_beneficiary",
+        "label": "New recipient",
+        "plain_explanation": "The recipient was added 4 minutes ago.",
+        "contribution": 2.19
+      },
+      {
+        "code": "mule_network",
+        "label": "Recipient linked to reported accounts",
+        "plain_explanation": "The recipient's account is linked to other accounts that were recently reported.",
+        "contribution": 1.51
+      },
+      {
+        "code": "device_anomaly",
+        "label": "New device",
+        "plain_explanation": "This payment is being made from a device you haven't used before.",
+        "contribution": 1.2
+      }
+    ],
+    "timeline": [
+      {
+        "timestamp": "2026-10-13T10:02:00+05:30",
+        "event_type": "message_received",
+        "description": "SMS from an unknown sender: account will be blocked today due to pending KYC.",
+        "evidence_id": "msg_demo1_001"
+      },
+      {
+        "timestamp": "2026-10-13T10:05:30+05:30",
+        "event_type": "device_login",
+        "description": "Payer signed in from a new device (dev_demo_new_77).",
+        "evidence_id": null
+      },
+      {
+        "timestamp": "2026-10-13T10:09:10+05:30",
+        "event_type": "beneficiary_added",
+        "description": "New payee kyc.helpdesk.verify@synthbank added.",
+        "evidence_id": null
+      },
+      {
+        "timestamp": "2026-10-13T10:13:02+05:30",
+        "event_type": "payment_initiated",
+        "description": "₹85,000 payment initiated to kyc.helpdesk.verify@synthbank.",
+        "evidence_id": null
+      },
+      {
+        "timestamp": "2026-10-13T10:13:03+05:30",
+        "event_type": "risk_decision",
+        "description": "R = 0.9972 → HOLD_AND_ESCALATE; customer shown a warning.",
+        "evidence_id": "policy_escalation_04"
+      },
+      {
+        "timestamp": "2026-10-13T10:13:05+05:30",
+        "event_type": "case_created",
+        "description": "Case auto-created (R ≥ 0.70).",
+        "evidence_id": null
+      }
+    ],
+    "linked_entities": [
+      {
+        "entity_type": "account",
+        "entity_id": "payer_demo_001",
+        "relation": "payer",
+        "risk_note": null
+      },
+      {
+        "entity_type": "vpa",
+        "entity_id": "kyc.helpdesk.verify@synthbank",
+        "relation": "payee",
+        "risk_note": "Created 2 days ago; received 9 payments from 9 different payers in 24h."
+      },
+      {
+        "entity_type": "device",
+        "entity_id": "dev_demo_new_77",
+        "relation": "payer_new_device",
+        "risk_note": "First seen 8 minutes before the payment."
+      },
+      {
+        "entity_type": "vpa",
+        "entity_id": "refund.desk.help@synthbank",
+        "relation": "shares_device_with_payee",
+        "risk_note": "Reported by 3 customers last week."
+      }
+    ],
+    "citations": [
+      {
+        "evidence_id": "policy_payment_safety_01",
+        "title": "Customer payment safety playbook (synthetic) §2 — urgency and account-block messages",
+        "snippet": "Messages that threaten to block an account unless money is paid immediately are a known manipulation pattern. Advise the customer to pause and verify through official channels.",
+        "uri": "gs://trustshield-policy-docs/payment_safety_playbook.pdf#s2"
+      },
+      {
+        "evidence_id": "policy_kyc_03",
+        "title": "KYC update policy (synthetic) §1",
+        "snippet": "KYC is never completed by transferring money to an individual or a 'verification' account.",
+        "uri": "gs://trustshield-policy-docs/kyc_policy.pdf#s1"
+      },
+      {
+        "evidence_id": "policy_escalation_04",
+        "title": "Fraud operations SOP (synthetic) §4 — holds and escalation",
+        "snippet": "A hold or escalation may only be executed after an analyst records an approval decision. Every decision carries an audit ID.",
+        "uri": "gs://trustshield-policy-docs/fraud_ops_sop.pdf#s4"
+      }
+    ],
+    "recommended_action": "approve_escalation",
+    "missing_evidence": [
+      "Call recording or transcript not uploaded",
+      "Payee bank KYC details not yet retrieved"
+    ],
+    "evidence_ids": [
+      "policy_payment_safety_01",
+      "policy_kyc_03",
+      "policy_escalation_04",
+      "msg_demo1_001"
+    ],
+    "analyst_decision": null
+  },
+  "case_list": {
+    "cases": [
+      {
+        "case_id": "CASE-TXN-DEMO1-85000",
+        "transaction_id": "TXN-DEMO1-85000",
+        "created_at": "2026-10-13T10:13:05+05:30",
+        "status": "pending_approval",
+        "risk_score": 0.9972,
+        "decision": "HOLD_AND_ESCALATE",
+        "risk_type": "urgency",
+        "amount": 85000,
+        "payee_vpa": "kyc.helpdesk.verify@synthbank"
+      }
+    ]
+  },
+  "ask_request": {
+    "question": "Why was this payment flagged?"
+  },
+  "ask_response": {
+    "answer": "Four signals combined: the amount is about 47x the payer's usual payment, the payee was added 4 minutes earlier, the payment came from a new device, and the linked SMS used account-block urgency. Policy treats account-block threats as a known manipulation pattern [policy_payment_safety_01] and states KYC is never completed by transferring money [policy_kyc_03].",
+    "citations": [
+      {
+        "evidence_id": "policy_payment_safety_01",
+        "title": "Customer payment safety playbook (synthetic) §2 — urgency and account-block messages",
+        "snippet": "Messages that threaten to block an account unless money is paid immediately are a known manipulation pattern.",
+        "uri": "gs://trustshield-policy-docs/payment_safety_playbook.pdf#s2"
+      },
+      {
+        "evidence_id": "policy_kyc_03",
+        "title": "KYC update policy (synthetic) §1",
+        "snippet": "KYC is never completed by transferring money to an individual or a 'verification' account.",
+        "uri": "gs://trustshield-policy-docs/kyc_policy.pdf#s1"
+      }
+    ]
+  },
+  "decision_request": {
+    "action": "approve_escalation",
+    "analyst_id": "analyst_demo_01",
+    "reason": "Account-block urgency SMS, brand-new payee linked to a reported VPA, 47x amount. Escalating and contacting the customer."
+  },
+  "decision_response": {
+    "case_id": "CASE-TXN-DEMO1-85000",
+    "status": "escalated",
+    "decision": {
+      "action": "approve_escalation",
+      "analyst_id": "analyst_demo_01",
+      "reason": "Account-block urgency SMS, brand-new payee linked to a reported VPA, 47x amount. Escalating and contacting the customer.",
+      "decided_at": "2026-10-13T10:21:40+05:30",
+      "audit_id": "AUD-DEMO2-0002"
+    }
+  },
+  "audit_record": {
+    "audit_id": "AUD-DEMO2-0002",
+    "timestamp": "2026-10-13T10:21:40+05:30",
+    "actor_type": "analyst",
+    "actor_id": "analyst_demo_01",
+    "action": "analyst_decision",
+    "subject_type": "case",
+    "subject_id": "CASE-TXN-DEMO1-85000",
+    "decision": "approve_escalation",
+    "risk_score": 0.9972,
+    "evidence_ids": [
+      "policy_payment_safety_01",
+      "policy_kyc_03",
+      "policy_escalation_04"
+    ],
+    "approval_record_id": "APPR-DEMO2-0001",
+    "governance_outcome": "permitted",
+    "reason": "Hold/escalate approved by analyst."
+  }
+}

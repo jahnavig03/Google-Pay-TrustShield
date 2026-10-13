@@ -1,0 +1,4 @@
+pydantic>=2.7,<3
+fastapi>=0.110  # only for scripts/export_openapi.py
+pytest>=8
+ruff>=0.5
