@@ -69,12 +69,17 @@ Any R ≥ 0.70 opens a case (`analyst_case_required = true`).
 - Git: never add `Co-Authored-By` trailers, "Generated with Claude Code" lines or any other AI attribution to commit messages or PR descriptions. Commits are authored by the team member only.
 
 ## Commands (keep this section updated)
+- Gateway install: `cd services/gateway && python3 -m venv .venv && source .venv/bin/activate && pip install --prefer-binary -r requirements.txt -e ../../shared/contracts -e ../agents`
 - Gateway: `cd services/gateway && source .venv/bin/activate && uvicorn main:app --reload` → http://localhost:8000/docs
+- Gateway roles: send `X-Demo-Role: customer | analyst | merchant` (evaluate / `/cases*` / merchant). Missing header → 401, wrong role → 403.
+- Gateway image (build from the REPO ROOT): `docker build -f services/gateway/Dockerfile -t trustshield-gateway .` then `docker run --rm -p 8080:8080 -e TRUSTSHIELD_MODE=mock trustshield-gateway`
 - Agents install: `cd services/agents && python3 -m venv .venv && source .venv/bin/activate && pip install --prefer-binary -r requirements.txt -e ../../shared/contracts -e .`
 - Agents demo: `cd services/agents && source .venv/bin/activate && python -m trustshield_agents.demo1`
 - Risk engine demo: `python -m trustshield_agents.risk demo` (agents venv)
 - ADK dev UI: `cd services/agents && adk web adk_apps` (ADK 2.x graph `Workflow`; Sequential/ParallelAgent are deprecated)
 - Contract → OpenAPI: `cd shared/contracts && source .venv/bin/activate && python scripts/export_openapi.py` (re-run after any model change; a test fails if stale)
 - Evals: `cd services/agents && source .venv/bin/activate && python ../../evals/run_evals.py [--mode gcp]` → `evals/results/<date>.md`
-- Firestore emulator: `firebase emulators:start --only firestore`
-- Tests: `pytest` inside each service (and `shared/contracts`)
+- Firestore emulator: `firebase emulators:start --only firestore` (needs Java 21+; use port 8081 and `FIRESTORE_EMULATOR_HOST=localhost:8081` if 8080 is taken)
+- Infra: `bash infra/enable-apis.sh [--dry-run]` then `bash infra/bootstrap.sh [--dry-run]` (idempotent; `--dry-run` changes nothing)
+- Cloud Build by hand: `gcloud builds submit --config cloudbuild.yaml --substitutions=SHORT_SHA=manual .` (a push to `main` runs it automatically)
+- Tests: `pytest` inside each service (and `shared/contracts`). The gateway suite needs no emulator and no credentials; its one emulator test skips itself unless `FIRESTORE_EMULATOR_HOST` is reachable.

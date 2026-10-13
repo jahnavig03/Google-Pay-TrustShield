@@ -1,0 +1,14 @@
+# The gateway image is built from the repo root; keep local-only files out of the context.
+.git
+.github
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+**/node_modules
+web/dist
+.env
+.env.*
+evals/results
+# Note: services/agents/prompts/*.md are runtime prompt templates - do not exclude markdown.
