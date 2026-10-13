@@ -12,6 +12,7 @@ import types
 from typing import Any
 
 import pytest
+from google.api_core import exceptions as gcp_exceptions
 
 
 class _Snapshot:
@@ -27,7 +28,16 @@ class _Document:
     def __init__(self, collection: _Collection, doc_id: str) -> None:
         self._collection, self._id = collection, doc_id
 
+    async def create(self, data: dict[str, Any]) -> None:
+        # Matches Firestore: create fails if the document is already there.
+        self._collection.calls.append("create")
+        if self._id in self._collection.docs:
+            raise self._collection.conflict_error(f"{self._id} already exists")
+        self._collection.docs[self._id] = dict(data)
+
     async def set(self, data: dict[str, Any]) -> None:
+        # Present only so a regression back to .set() is visible in `calls`.
+        self._collection.calls.append("set")
         self._collection.docs[self._id] = dict(data)
 
     async def get(self) -> _Snapshot:
@@ -40,8 +50,12 @@ class _Document:
 
 
 class _Collection:
+    #: Swapped per test to check both exception types Firestore can raise for a taken id.
+    conflict_error: Any = gcp_exceptions.AlreadyExists
+
     def __init__(self) -> None:
         self.docs: dict[str, dict[str, Any]] = {}
+        self.calls: list[str] = []
 
     def document(self, doc_id: str) -> _Document:
         return _Document(self, doc_id)
@@ -59,6 +73,9 @@ class _FakeAsyncClient:
 
     def collection(self, name: str) -> _Collection:
         return self._collections.setdefault(name, _Collection())
+
+    def calls_on(self, name: str) -> list[str]:
+        return self._collections[name].calls
 
     def close(self) -> None:
         self.closed = True
@@ -113,3 +130,35 @@ async def test_update_merges_into_the_existing_document(store):
 async def test_close_closes_the_client(store):
     await store.close()
     assert store._client.closed is True
+
+
+async def test_create_refuses_to_overwrite_an_existing_document(store):
+    """Governance rule 4: audit_log is append-only, so a repeat id must fail, not replace."""
+    from trustshield_gateway.ports import AlreadyExists
+
+    await store.create("audit_log", "AUD-1", {"audit_id": "AUD-1", "decision": "ALLOW"})
+    with pytest.raises(AlreadyExists):
+        await store.create("audit_log", "AUD-1", {"audit_id": "AUD-1", "decision": "HOLD"})
+
+    # The original survives untouched.
+    assert (await store.get("audit_log", "AUD-1"))["decision"] == "ALLOW"
+
+
+async def test_create_uses_firestore_create_not_set(store):
+    """Regression guard: .set() would overwrite and break the append-only audit log."""
+    await store.create("audit_log", "AUD-9", {"audit_id": "AUD-9"})
+    calls = store._client.calls_on("audit_log")
+    assert calls == ["create"]
+    assert "set" not in calls
+
+
+async def test_conflict_is_translated_to_the_port_error(store):
+    """Some transports surface a taken id as a plain 409 Conflict rather than AlreadyExists."""
+    from trustshield_gateway.ports import AlreadyExists
+
+    collection = store._client.collection("audit_log")
+    collection.conflict_error = gcp_exceptions.Conflict
+
+    await store.create("audit_log", "AUD-C", {"audit_id": "AUD-C"})
+    with pytest.raises(AlreadyExists):
+        await store.create("audit_log", "AUD-C", {"audit_id": "AUD-C"})

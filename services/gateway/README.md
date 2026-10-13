@@ -46,6 +46,12 @@ Any response with `analyst_case_required = true` (R ≥ 0.70) opens a case in Fi
 status `pending_approval`, publishes `{"case_id": ...}` to the Pub/Sub `cases` topic and comes back
 with `case_id` set.
 
+There is **one case per transaction**. Scoring the same transaction again never recreates it: the
+existing case keeps its `status`, `analyst_decision`, `summary` and `citations`, gains one
+`risk_decision` timeline entry reading `Re-evaluated: R = <score> -> <decision> (audit <id>)`, and
+is not announced to the `cases` topic a second time. The repeat scoring is still a decision, so it
+still gets its own audit row.
+
 ### The other three
 
 `POST /api/v1/merchant/payment-verify` is a placeholder that answers `not_found_in_ledger` /
@@ -78,6 +84,11 @@ A `422` body carries `{governance_outcome, code, reason, audit_id}`: the block i
 | `DocumentStore` (`audit_log`, `cases`, `approvals`) | Firestore emulator when `FIRESTORE_EMULATOR_HOST` is set, otherwise an in-process store | Firestore (`asia-south1`) |
 | `Publisher` (`cases` topic) | no-op publisher that records what it was handed | Pub/Sub |
 
+`DocumentStore.create` is **create-only**: it raises `AlreadyExists` rather than replacing a
+document, so the append-only `audit_log` cannot lose a record even to a concurrent writer. The
+Firestore adapter uses `.create()` instead of `.set()` for the same reason. Editing an existing
+document goes through `update`.
+
 `TRUSTSHIELD_DOC_STORE` (`firestore` / `memory`) and `TRUSTSHIELD_PUBLISHER` (`pubsub` / `noop`)
 override the choice. Defaulting to the in-process store means `pytest` needs neither Java nor the
 Firebase CLI, which is what keeps the Cloud Build test step simple.
@@ -85,8 +96,8 @@ Firebase CLI, which is what keeps the Cloud Build test step simple.
 ## Tests
 
 ```bash
-pytest                       # 74 tests, no emulator needed
-                             # 75 with the Firestore emulator running (see below)
+pytest                       # 84 tests, no emulator needed
+                             # 85 with the Firestore emulator running (see below)
 ```
 
 `tests/test_payment_flow.py` drives the ₹85,000 fixture
@@ -98,7 +109,7 @@ reachable:
 
 ```bash
 firebase emulators:start --only firestore        # needs Java 21+, reads firebase.json
-FIRESTORE_EMULATOR_HOST=localhost:8080 pytest    # 75 passed, 0 skipped
+FIRESTORE_EMULATOR_HOST=localhost:8080 pytest    # 85 passed, 0 skipped
 ```
 
 Verified on 14 Oct 2026 against firebase-tools 15.33.0 and the Firestore emulator v1.22.0: the

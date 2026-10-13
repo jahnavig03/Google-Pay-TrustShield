@@ -8,7 +8,10 @@ from __future__ import annotations
 
 from typing import Any
 
+from google.api_core import exceptions as gcp_exceptions
 from google.cloud import firestore
+
+from ..ports import AlreadyExists
 
 
 class FirestoreDocumentStore:
@@ -16,7 +19,14 @@ class FirestoreDocumentStore:
         self._client = firestore.AsyncClient(project=project)
 
     async def create(self, collection: str, doc_id: str, data: dict[str, Any]) -> None:
-        await self._client.collection(collection).document(doc_id).set(data)
+        # .create() rather than .set(): Firestore rejects it if the document already exists,
+        # so an append-only collection cannot be overwritten even by a concurrent writer.
+        try:
+            await self._client.collection(collection).document(doc_id).create(data)
+        except (gcp_exceptions.AlreadyExists, gcp_exceptions.Conflict) as exc:
+            # Firestore reports the clash as AlreadyExists; some transports surface the same
+            # condition as a plain 409 Conflict. Both mean the id is taken.
+            raise AlreadyExists(collection, doc_id) from exc
 
     async def get(self, collection: str, doc_id: str) -> dict[str, Any] | None:
         snapshot = await self._client.collection(collection).document(doc_id).get()

@@ -133,7 +133,33 @@ def _to_document(case: Case, req: PaymentRiskRequest) -> dict[str, Any]:
 
 
 async def save_case(store: DocumentStore, case: Case, req: PaymentRiskRequest) -> None:
+    """Create the case. Raises :class:`AlreadyExists` if this transaction already has one."""
     await store.create(CASES_COLLECTION, case.case_id, _to_document(case, req))
+
+
+async def record_reevaluation(
+    store: DocumentStore, case_id: str, resp: PaymentRiskResponse, audit_id: str
+) -> None:
+    """Append one timeline event for a repeat scoring of a transaction that already has a case.
+
+    Nothing else on the case is touched: ``status``, ``analyst_decision``, ``summary`` and
+    ``citations`` all stand. Overwriting them would reset a case an analyst had already decided,
+    which is the bug this exists to prevent.
+    """
+    document = await store.get(CASES_COLLECTION, case_id)
+    if document is None:  # pragma: no cover - the caller has just seen it
+        return
+    event = TimelineEvent(
+        timestamp=now(),
+        event_type="risk_decision",
+        description=(
+            f"Re-evaluated: R = {resp.risk_score} -> {resp.decision.value} (audit {audit_id})"
+        ),
+        evidence_id=resp.evidence_ids[0] if resp.evidence_ids else None,
+    )
+    timeline = list(document.get("timeline") or [])
+    timeline.append(event.model_dump(mode="json"))
+    await store.update(CASES_COLLECTION, case_id, {"timeline": timeline})
 
 
 async def get_case_document(store: DocumentStore, case_id: str) -> dict[str, Any] | None:

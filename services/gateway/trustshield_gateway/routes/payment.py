@@ -13,6 +13,7 @@ from ..audit import write_audit
 from ..deps import PublisherDep, ServicesDep, StoreDep
 from ..governance import HTTP_422_BLOCKED
 from ..ids import new_audit_id
+from ..ports import AlreadyExists
 from ..security import CUSTOMER, require_role
 from ..settings import cases_topic
 
@@ -96,13 +97,31 @@ async def evaluate_payment_risk(
 
     if resp.analyst_case_required:
         case = cases_service.build_case(req, resp)
-        await cases_service.save_case(store, case, req)
         resp.case_id = case.case_id
-        try:
-            await publisher.publish(cases_topic(), {"case_id": case.case_id})
-        except Exception:
-            # The case is already in Firestore, which is what the analyst UI reads. A failed
-            # notification is worth shouting about but must not fail the customer's payment.
-            log.exception("could not publish %s to the %s topic", case.case_id, cases_topic())
+        existing = await cases_service.get_case_document(store, case.case_id)
+
+        if existing is None:
+            try:
+                await cases_service.save_case(store, case, req)
+            except AlreadyExists:
+                # Two evaluations of the same transaction raced; the other one opened the case.
+                existing = await cases_service.get_case_document(store, case.case_id)
+            else:
+                try:
+                    await publisher.publish(cases_topic(), {"case_id": case.case_id})
+                except Exception:
+                    # The case is already in Firestore, which is what the analyst UI reads. A
+                    # failed notification must not fail the customer's payment.
+                    log.exception(
+                        "could not publish %s to the %s topic", case.case_id, cases_topic()
+                    )
+
+        if existing is not None:
+            # The transaction already has a case. Leave its status, analyst_decision, summary
+            # and citations alone, record the repeat on the timeline, and do not publish again.
+            await cases_service.record_reevaluation(store, case.case_id, resp, resp.audit_id)
+            log.info(
+                "re-evaluated %s; existing case %s kept as is", req.transaction_id, case.case_id
+            )
 
     return resp

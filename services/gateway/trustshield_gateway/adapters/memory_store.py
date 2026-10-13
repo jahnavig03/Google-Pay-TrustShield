@@ -6,6 +6,8 @@ import asyncio
 import copy
 from typing import Any
 
+from ..ports import AlreadyExists
+
 
 class MemoryDocumentStore:
     """Dict-backed stand-in for Firestore. Deep-copies on the way in and out."""
@@ -16,7 +18,10 @@ class MemoryDocumentStore:
 
     async def create(self, collection: str, doc_id: str, data: dict[str, Any]) -> None:
         async with self._lock:
-            self._data.setdefault(collection, {})[doc_id] = copy.deepcopy(data)
+            documents = self._data.setdefault(collection, {})
+            if doc_id in documents:
+                raise AlreadyExists(collection, doc_id)
+            documents[doc_id] = copy.deepcopy(data)
 
     async def get(self, collection: str, doc_id: str) -> dict[str, Any] | None:
         async with self._lock:
