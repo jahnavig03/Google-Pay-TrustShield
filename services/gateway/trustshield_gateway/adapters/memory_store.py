@@ -1,0 +1,43 @@
+"""In-process document store. Used in mock mode when no Firestore emulator is configured."""
+
+from __future__ import annotations
+
+import asyncio
+import copy
+from typing import Any
+
+
+class MemoryDocumentStore:
+    """Dict-backed stand-in for Firestore. Deep-copies on the way in and out."""
+
+    def __init__(self) -> None:
+        self._data: dict[str, dict[str, dict[str, Any]]] = {}
+        self._lock = asyncio.Lock()
+
+    async def create(self, collection: str, doc_id: str, data: dict[str, Any]) -> None:
+        async with self._lock:
+            self._data.setdefault(collection, {})[doc_id] = copy.deepcopy(data)
+
+    async def get(self, collection: str, doc_id: str) -> dict[str, Any] | None:
+        async with self._lock:
+            found = self._data.get(collection, {}).get(doc_id)
+            return copy.deepcopy(found) if found is not None else None
+
+    async def list(
+        self, collection: str, *, order_by: str | None = None, descending: bool = True
+    ) -> list[dict[str, Any]]:
+        async with self._lock:
+            docs = [copy.deepcopy(doc) for doc in self._data.get(collection, {}).values()]
+        if order_by:
+            docs.sort(key=lambda doc: str(doc.get(order_by) or ""), reverse=descending)
+        return docs
+
+    async def update(self, collection: str, doc_id: str, patch: dict[str, Any]) -> None:
+        async with self._lock:
+            existing = self._data.get(collection, {}).get(doc_id)
+            if existing is None:
+                raise KeyError(f"{collection}/{doc_id} does not exist")
+            existing.update(copy.deepcopy(patch))
+
+    async def close(self) -> None:
+        return None

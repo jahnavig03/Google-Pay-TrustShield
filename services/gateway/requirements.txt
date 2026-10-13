@@ -1,0 +1,13 @@
+# Install with:
+#   pip install --prefer-binary -r requirements.txt -e ../../shared/contracts -e ../agents
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2.7,<3
+python-dotenv>=1
+# Firestore + Pub/Sub adapters (gcp mode, and mock mode against the local emulators).
+google-cloud-firestore>=2.16
+google-cloud-pubsub>=2.21
+pytest>=8
+pytest-asyncio>=0.23
+httpx>=0.27
+ruff>=0.5
