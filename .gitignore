@@ -1,0 +1,60 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- Virtual envs ---
+.venv/
+venv/
+env/
+
+# --- Node / web ---
+node_modules/
+web/dist/
+.vite/
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Env files (commit .env.example only) ---
+.env
+.env.*
+!.env.example
+
+# --- GCP keys / credentials (never commit) ---
+*-key.json
+*.key.json
+service-account*.json
+sa-*.json
+credentials.json
+application_default_credentials.json
+gha-creds-*.json
+
+# --- Firebase / emulators ---
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+pubsub-debug.log*
+ui-debug.log*
+emulator-data/
+.emulator-data/
+
+# --- Data outputs (regenerable) ---
+data/out/
+
+# --- ADK local session state ---
+.adk/
+
+# --- OS / editors ---
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
