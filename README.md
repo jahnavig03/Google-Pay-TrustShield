@@ -2,8 +2,6 @@
 
 > **Prototype simulator — synthetic data.** Not affiliated with Google Pay. No real Google Pay data, identities or credentials are used anywhere in this repo.
 
-Hackathon entry for the **Google Cloud AI Builder Cup, BFSI track** (submission 18 Oct 2026).
-
 ## The pitch
 
 UPI scams increasingly pass PIN and device checks, because the victim approves the payment themselves — under manipulation ("your account will be blocked", fake KYC, fake refunds, "receive money first"). Fraud stacks score the transaction but rarely connect it to the message, call or QR code that induced it.
