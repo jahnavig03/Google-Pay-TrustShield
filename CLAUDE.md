@@ -66,6 +66,7 @@ Any R ≥ 0.70 opens a case (`analyst_case_required = true`).
 - Customer-facing text must be non-accusatory and must give a safe next action.
 - Every policy claim must cite a retrieved source. If nothing is retrieved, answer "not covered by policy".
 - The UI must be labelled "Prototype simulator — synthetic data". It must not use Google Pay logos or look like the real app.
+- Git: never add `Co-Authored-By` trailers, "Generated with Claude Code" lines or any other AI attribution to commit messages or PR descriptions. Commits are authored by the team member only.
 
 ## Commands (keep this section updated)
 - Gateway: `cd services/gateway && source .venv/bin/activate && uvicorn main:app --reload` → http://localhost:8000/docs
