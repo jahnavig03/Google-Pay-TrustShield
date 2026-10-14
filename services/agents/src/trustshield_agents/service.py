@@ -61,4 +61,29 @@ def evaluate_payment(req: PaymentRiskRequest) -> PaymentRiskResponse:
         return pool.submit(asyncio.run, evaluate_payment_async(req)).result()
 
 
-__all__ = ["evaluate_payment", "evaluate_payment_async", "mode"]
+async def warm_up_async() -> None:
+    """Do the one-off start-up work before the first payment arrives.
+
+    Builds the adapters (in gcp mode this resolves credentials, ~1 s), compiles the workflow and
+    opens the Gemini connections with a free metadata call. Call it from the gateway's start-up,
+    in the same event loop that will serve requests. Raises if gcp mode is misconfigured, so a
+    bad deploy fails at start-up instead of on the first payment.
+    """
+    svc = build_services()
+    _workflow_for(svc)
+    if svc.gemini is not None:
+        await svc.gemini.warm_up()
+
+
+def warm_up() -> None:
+    """Synchronous :func:`warm_up_async` for scripts. Async callers should await the async one."""
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        asyncio.run(warm_up_async())
+        return
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+        pool.submit(asyncio.run, warm_up_async()).result()
+
+
+__all__ = ["evaluate_payment", "evaluate_payment_async", "mode", "warm_up", "warm_up_async"]

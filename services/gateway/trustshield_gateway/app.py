@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from trustshield_agents import warm_up_async
 
 from .adapters import build_services
 from .routes import cases, health, merchant, payment
@@ -24,6 +25,10 @@ DESCRIPTION = (
 async def lifespan(app: FastAPI):
     services = build_services()
     app.state.services = services
+    # Build the agents' adapters and open the Gemini connections now (free metadata call), in
+    # this event loop, so the first payment after a cold start doesn't pay ~2-3 s of set-up.
+    # A misconfigured gcp deploy fails here, at start-up, rather than on the first payment.
+    await warm_up_async()
     log.info(
         "gateway ready: mode=%s store=%s publisher=%s",
         services.mode,

@@ -100,14 +100,17 @@ def _linked_entities(req: PaymentRiskRequest) -> list[LinkedEntity]:
     return entities
 
 
+def recommended_action_for(decision: Decision) -> AnalystAction:
+    """What the analyst is asked to do for a case opened (or raised) at ``decision``."""
+    if decision is Decision.HOLD_AND_ESCALATE:
+        return AnalystAction.APPROVE_ESCALATION
+    return AnalystAction.CUSTOMER_OUTREACH
+
+
 def build_case(req: PaymentRiskRequest, resp: PaymentRiskResponse) -> Case:
     """The case the gateway opens when ``analyst_case_required`` is true."""
     created_at = now()
-    recommended = (
-        AnalystAction.APPROVE_ESCALATION
-        if resp.decision is Decision.HOLD_AND_ESCALATE
-        else AnalystAction.CUSTOMER_OUTREACH
-    )
+    recommended = recommended_action_for(resp.decision)
     return Case(
         case_id=case_id_for(req.transaction_id),
         transaction_id=req.transaction_id,
@@ -139,16 +142,17 @@ async def save_case(store: DocumentStore, case: Case, req: PaymentRiskRequest) -
 
 async def record_reevaluation(
     store: DocumentStore, case_id: str, resp: PaymentRiskResponse, audit_id: str
-) -> None:
-    """Append one timeline event for a repeat scoring of a transaction that already has a case.
+) -> bool:
+    """Record a repeat scoring of a transaction that already has a case.
 
-    Nothing else on the case is touched: ``status``, ``analyst_decision``, ``summary`` and
-    ``citations`` all stand. Overwriting them would reset a case an analyst had already decided,
-    which is the bug this exists to prevent.
+    - Appends one ``risk_decision`` timeline event, atomically, so concurrent re-evaluations
+      cannot drop each other's events.
+    - If the new score is higher than the case's, raises ``risk_score``, ``decision`` and
+      ``recommended_action`` to match (never lowers them), so the case list shows the peak risk.
+
+    ``status``, ``analyst_decision``, ``summary`` and ``citations`` are never touched: an analyst's
+    decision must survive a replay. Returns True if the case's risk was raised.
     """
-    document = await store.get(CASES_COLLECTION, case_id)
-    if document is None:  # pragma: no cover - the caller has just seen it
-        return
     event = TimelineEvent(
         timestamp=now(),
         event_type="risk_decision",
@@ -157,9 +161,17 @@ async def record_reevaluation(
         ),
         evidence_id=resp.evidence_ids[0] if resp.evidence_ids else None,
     )
-    timeline = list(document.get("timeline") or [])
-    timeline.append(event.model_dump(mode="json"))
-    await store.update(CASES_COLLECTION, case_id, {"timeline": timeline})
+    await store.append(CASES_COLLECTION, case_id, "timeline", event.model_dump(mode="json"))
+    return await store.update_if_greater(
+        CASES_COLLECTION,
+        case_id,
+        "risk_score",
+        resp.risk_score,
+        {
+            "decision": resp.decision.value,
+            "recommended_action": recommended_action_for(resp.decision).value,
+        },
+    )
 
 
 async def get_case_document(store: DocumentStore, case_id: str) -> dict[str, Any] | None:

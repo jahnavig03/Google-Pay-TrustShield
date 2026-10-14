@@ -33,7 +33,17 @@ class FakeClient:
                 raise outcome
             return outcome
 
-        self.aio = SimpleNamespace(models=SimpleNamespace(generate_content=generate_content))
+        self.metadata_calls = []
+
+        async def get(**kwargs):
+            self.metadata_calls.append(kwargs)
+            if isinstance(self.outcomes[0], Exception):
+                raise self.outcomes[0]
+            return SimpleNamespace(name=kwargs["model"])
+
+        self.aio = SimpleNamespace(
+            models=SimpleNamespace(generate_content=generate_content, get=get)
+        )
 
 
 def caller(*endpoints, **kw) -> GeminiCaller:
@@ -85,6 +95,21 @@ async def test_local_pacing_refuses_when_no_slot_in_budget():
     await c.generate("first", None)  # takes the slot; the next one is 10 s away
     with pytest.raises(GeminiUnavailable, match="rate limit"):
         await c.generate("second", None)
+
+
+async def test_warm_up_uses_free_metadata_call_on_every_endpoint():
+    regional, global_ = FakeClient(OK), FakeClient(OK)
+    c = caller(("asia-south1", regional), ("global", global_))
+    await c.warm_up()
+    assert regional.metadata_calls == [{"model": "model-from-env"}]
+    assert global_.metadata_calls == [{"model": "model-from-env"}]
+    assert regional.calls == [] and global_.calls == []  # no billed generate_content
+    assert c.stats.calls == 0
+
+
+async def test_warm_up_failure_is_not_fatal():
+    c = caller(("asia-south1", FakeClient(api_error(503))))
+    await c.warm_up()  # logged, not raised
 
 
 # ---- Scam Context adapter ----

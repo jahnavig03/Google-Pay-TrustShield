@@ -38,4 +38,20 @@ class DocumentStore(Protocol):
         """Merge ``patch`` into an existing document."""
         ...
 
+    async def append(self, collection: str, doc_id: str, field: str, item: Any) -> None:
+        """Atomically append ``item`` to the list in ``field``.
+
+        Safe under concurrent writers: unlike read-modify-write, no append can be lost.
+        """
+        ...
+
+    async def update_if_greater(
+        self, collection: str, doc_id: str, field: str, value: float, patch: dict[str, Any]
+    ) -> bool:
+        """Atomically set ``field`` to ``value`` (plus ``patch``) only if ``value`` is higher.
+
+        Returns True if the document was updated. Concurrent callers can never lower the field.
+        """
+        ...
+
     async def close(self) -> None: ...

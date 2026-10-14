@@ -48,5 +48,32 @@ class FirestoreDocumentStore:
     async def update(self, collection: str, doc_id: str, patch: dict[str, Any]) -> None:
         await self._client.collection(collection).document(doc_id).update(patch)
 
+    async def append(self, collection: str, doc_id: str, field: str, item: Any) -> None:
+        # ArrayUnion is applied server-side, so concurrent appends cannot overwrite each other.
+        # (It skips exact duplicates; our timeline events carry a unique audit id.)
+        await (
+            self._client.collection(collection)
+            .document(doc_id)
+            .update({field: firestore.ArrayUnion([item])})
+        )
+
+    async def update_if_greater(
+        self, collection: str, doc_id: str, field: str, value: float, patch: dict[str, Any]
+    ) -> bool:
+        ref = self._client.collection(collection).document(doc_id)
+
+        @firestore.async_transactional
+        async def apply(transaction) -> bool:
+            snapshot = await ref.get(transaction=transaction)
+            if not snapshot.exists:
+                raise KeyError(f"{collection}/{doc_id} does not exist")
+            current = (snapshot.to_dict() or {}).get(field)
+            if current is not None and current >= value:
+                return False
+            transaction.update(ref, {field: value, **patch})
+            return True
+
+        return await apply(self._client.transaction())
+
     async def close(self) -> None:
         self._client.close()

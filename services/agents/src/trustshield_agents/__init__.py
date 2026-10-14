@@ -10,9 +10,9 @@ from typing import TYPE_CHECKING, Any
 __version__ = "0.1.0"
 
 if TYPE_CHECKING:
-    from .service import evaluate_payment, evaluate_payment_async
+    from .service import evaluate_payment, evaluate_payment_async, warm_up, warm_up_async
 
-__all__ = ["evaluate_payment", "evaluate_payment_async"]
+__all__ = ["evaluate_payment", "evaluate_payment_async", "warm_up", "warm_up_async"]
 
 
 def __getattr__(name: str) -> Any:

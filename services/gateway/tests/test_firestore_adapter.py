@@ -24,6 +24,13 @@ class _Snapshot:
         return self._data
 
 
+class _ArrayUnion:
+    """Stand-in for firestore.ArrayUnion: the stub's update() appends its values."""
+
+    def __init__(self, values: list[Any]) -> None:
+        self.values = values
+
+
 class _Document:
     def __init__(self, collection: _Collection, doc_id: str) -> None:
         self._collection, self._id = collection, doc_id
@@ -46,7 +53,13 @@ class _Document:
     async def update(self, patch: dict[str, Any]) -> None:
         if self._id not in self._collection.docs:
             raise KeyError(self._id)
-        self._collection.docs[self._id].update(patch)
+        doc = self._collection.docs[self._id]
+        for key, value in patch.items():
+            if isinstance(value, _ArrayUnion):
+                self._collection.calls.append("array_union")
+                doc.setdefault(key, []).extend(v for v in value.values if v not in doc[key])
+            else:
+                doc[key] = value
 
 
 class _Collection:
@@ -84,7 +97,7 @@ class _FakeAsyncClient:
 @pytest.fixture
 def store(monkeypatch):
     """Import the adapter with google.cloud.firestore replaced by the stub above."""
-    fake_module = types.SimpleNamespace(AsyncClient=_FakeAsyncClient)
+    fake_module = types.SimpleNamespace(AsyncClient=_FakeAsyncClient, ArrayUnion=_ArrayUnion)
     monkeypatch.setitem(sys.modules, "google.cloud.firestore", fake_module)
     sys.modules.pop("trustshield_gateway.adapters.firestore_store", None)
 
@@ -162,3 +175,11 @@ async def test_conflict_is_translated_to_the_port_error(store):
     await store.create("audit_log", "AUD-C", {"audit_id": "AUD-C"})
     with pytest.raises(AlreadyExists):
         await store.create("audit_log", "AUD-C", {"audit_id": "AUD-C"})
+
+
+async def test_append_uses_array_union_not_read_modify_write(store):
+    """Server-side ArrayUnion is what makes concurrent timeline appends safe."""
+    await store.create("cases", "CASE-1", {"case_id": "CASE-1", "timeline": [{"n": 0}]})
+    await store.append("cases", "CASE-1", "timeline", {"n": 1})
+    assert (await store.get("cases", "CASE-1"))["timeline"] == [{"n": 0}, {"n": 1}]
+    assert store._client.calls_on("cases") == ["create", "array_union"]
