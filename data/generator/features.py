@@ -44,8 +44,15 @@ def load_pinned() -> dict:
     return json.loads(PINNED_PATH.read_text(encoding="utf-8"))
 
 
+def _in_window(tx: pd.DataFrame) -> pd.DataFrame:
+    """Payments in [AS_OF - WINDOW_DAYS, AS_OF]: the same filter the BigQuery views apply."""
+    as_of = pd.Timestamp(C.AS_OF)
+    start = as_of - timedelta(days=C.WINDOW_DAYS)
+    return tx[(tx["ts"] >= start) & (tx["ts"] <= as_of)]
+
+
 def payer_features(ds: Dataset) -> dict[str, dict]:
-    tx = ds["transactions"]
+    tx = _in_window(ds["transactions"])
     as_of = pd.Timestamp(C.AS_OF)
     in_1h = tx["ts"] > as_of - timedelta(hours=1)
     in_24h = tx["ts"] > as_of - timedelta(hours=24)
@@ -69,7 +76,7 @@ def payer_features(ds: Dataset) -> dict[str, dict]:
 
 def payee_features(ds: Dataset) -> dict[str, dict]:
     tx, labels, accounts, devices = (
-        ds["transactions"],
+        _in_window(ds["transactions"]),
         ds["labels"],
         ds["accounts"],
         ds["devices"],
@@ -77,7 +84,8 @@ def payee_features(ds: Dataset) -> dict[str, dict]:
     as_of = pd.Timestamp(C.AS_OF)
     lab = tx[["txn_id", "payee_account_id", "payer_id", "ts"]].merge(labels, on="txn_id")
 
-    reported = set(lab.loc[lab["reported_by_user"], "payee_account_id"])
+    was_reported = lab["reported_by_user"] & (lab["reported_at"] <= as_of)
+    reported = set(lab.loc[was_reported, "payee_account_id"])
     scam_labelled = set(lab.loc[lab["is_scam"], "payee_account_id"])
     recent_cutoff = as_of - timedelta(days=C.RECENT_VPA_DAYS)
     recent = set(accounts.loc[accounts["created_at"] >= recent_cutoff, "account_id"])
