@@ -4,7 +4,7 @@ import asyncio
 
 from trustshield_contracts import Decision, PaymentRiskRequest, PaymentRiskResponse
 
-from trustshield_agents import evaluate_payment, evaluate_payment_async
+from trustshield_agents import evaluate_payment, evaluate_payment_async, warm_up, warm_up_async
 from trustshield_agents.guardrails import customer_text_violations
 
 
@@ -70,3 +70,12 @@ async def test_mock_latency_budget(demo1_request):
     for _ in range(5):
         await evaluate_payment_async(demo1_request)
     assert (time.perf_counter() - t0) / 5 < 0.8  # PRD p50 SLO is 800 ms
+
+
+async def test_warm_up_async_in_mock_mode(demo1_request):
+    await warm_up_async()
+    assert (await evaluate_payment_async(demo1_request)).decision is Decision.HOLD_AND_ESCALATE
+
+
+def test_warm_up_sync_outside_loop():
+    warm_up()

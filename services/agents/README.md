@@ -15,6 +15,10 @@ async def evaluate(req: PaymentRiskRequest) -> PaymentRiskResponse:
     return governance.apply(await evaluate_payment_async(req))  # Governance fills audit_id
 ```
 
+Call `await trustshield_agents.warm_up_async()` once at start-up (the gateway's lifespan does). It
+builds the adapters, compiles the workflow and opens the Gemini connections with a free metadata
+call, so the first payment after a cold start doesn't pay ~2-3 s of set-up.
+
 Install into the gateway venv: `pip install --prefer-binary -e ../agents -e ../../shared/contracts`.
 The response always has `top_signals` (3–5) and `evidence_ids`. `audit_id` and `case_id` are left
 empty for the gateway to fill in. `evaluate_payment` (sync) also works inside a running event loop.

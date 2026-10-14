@@ -77,6 +77,18 @@ class GeminiCaller:
         self._next_slot = 0.0
         self.stats = GeminiStats()
 
+    async def warm_up(self) -> None:
+        """Open the connection and fetch an access token for every endpoint, before traffic.
+
+        Uses ``models.get`` (model metadata), which is free: no tokens are generated or billed.
+        Failures are logged and ignored; the first real call simply pays the set-up cost.
+        """
+        for location, client in self.endpoints:
+            try:
+                await asyncio.wait_for(client.aio.models.get(model=self.model), self._budget_s)
+            except Exception as exc:  # noqa: BLE001 — warm-up is best effort
+                log.warning("Gemini warm-up on %s failed: %s", location, str(exc)[:200])
+
     async def _pace(self, deadline: float) -> None:
         if not self._interval_s:
             return
