@@ -77,6 +77,43 @@ from `generator/pinned_features.json` and always win over generated rows, becaus
 fixtures and the agents' tests depend on them. Generated VPAs always contain digits, so they can
 never collide with the hand-written VPAs in tests and evals (e.g. `friend.regular@synthbank`).
 
+## BigQuery (`data/bq/`)
+
+```bash
+gcloud auth login && gcloud auth application-default login
+gcloud auth application-default set-quota-project qualified-sun-511214-t1
+cd data && python -m generator --seed 42 --no-features   # data/out/ (incl. meta + demo tables)
+bash bq/load.sh --dry-run                                  # prints every command, changes nothing
+bash bq/load.sh                                            # create tables, batch-load, create views
+python bq/verify.py                                        # views == features.json, row by row
+```
+
+**What `load.sh` does:**
+- Creates the dataset if it's missing, then the tables in `bq/schema/*.sql` (`CREATE TABLE IF NOT EXISTS`).
+- Empties each table with `TRUNCATE` and batch-loads the Parquet file with `bq load`.
+- Creates both views in `bq/views/*.sql` (`CREATE OR REPLACE`).
+
+**Cost rule:**
+- Only batch `bq load` (free), never streaming.
+- Every query is `--dry_run` first, and its byte count is printed.
+- The whole dataset is about 5 MB, well inside the free tier.
+
+`GCP_PROJECT_ID`, `GCP_REGION` and `BQ_DATASET` come from the environment or the repo-root `.env`.
+
+| Object | What |
+| --- | --- |
+| `transactions`, `beneficiaries`, `devices`, `labels`, `merchant_ledger`, `accounts`, `merchants` | the generated tables, clustered for the lookups the agents and PayGuard make |
+| `meta` | one row holding the dataset's `as_of`, the window, and `recent_vpa_days` |
+| `demo_payer_features`, `demo_payee_features` | the pinned demo rows |
+| `v_payer_features(payer_id, median_amount, avg_daily_txn, txn_count_1h, txn_count_24h)` | features.json `payers` |
+| `v_payee_features(payee_vpa, flags ARRAY<STRING>, reported_links, fan_in_24h, is_merchant)` | features.json `payees` |
+
+The views compute "now" as `meta.as_of`, not `CURRENT_TIMESTAMP()`, because the synthetic history
+ends at `AS_OF`. Live traffic would swap in `CURRENT_TIMESTAMP()`. The views also union in the
+pinned demo rows, so demo 1 behaves the same with `TRUSTSHIELD_FEATURE_STORE=bigquery`.
+`tests/test_bq.py` checks offline that the DDL matches the Parquet schemas and that the SQL
+never hard-codes a project.
+
 ## Held-out eval messages
 
 `evals/heldout_messages.jsonl` contains 100 new labelled messages (65 English, 35 Hinglish), in the same
