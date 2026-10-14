@@ -87,4 +87,5 @@ SELECT * FROM pinned
 UNION ALL
 SELECT g.*
 FROM generated AS g
-WHERE g.payee_vpa NOT IN (SELECT payee_vpa FROM pinned)
+-- NOT EXISTS, not NOT IN: stays correct even if a pinned key were ever NULL.
+WHERE NOT EXISTS (SELECT 1 FROM pinned AS p WHERE p.payee_vpa = g.payee_vpa)
