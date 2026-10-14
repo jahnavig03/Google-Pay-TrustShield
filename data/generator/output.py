@@ -10,6 +10,7 @@ import pyarrow.parquet as pq
 
 from .bq_tables import write_bq_tables
 from .features import build_features, dumps
+from .payguard import build_payguard_mocks, dumps_ledger, dumps_screenshots
 from .pipeline import TABLES, Dataset
 
 DATA_DIR = Path(__file__).resolve().parents[1]
@@ -40,6 +41,19 @@ def write_tables(ds: Dataset, out_dir: Path) -> dict[str, int]:
     manifest = {"seed": ds.seed, "row_counts": counts}
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return counts
+
+
+def write_payguard_mocks(ds: Dataset, mock_dir: Path) -> tuple[dict, dict]:
+    """merchant_ledger.json + screenshots.json next to features.json."""
+    ledger, shots = build_payguard_mocks(ds)
+    mock_dir.mkdir(parents=True, exist_ok=True)
+    (mock_dir / "merchant_ledger.json").write_text(
+        dumps_ledger(ledger), encoding="utf-8", newline="\n"
+    )
+    (mock_dir / "screenshots.json").write_text(
+        dumps_screenshots(shots), encoding="utf-8", newline="\n"
+    )
+    return ledger, shots
 
 
 def write_features(ds: Dataset, path: Path) -> dict:

@@ -16,6 +16,7 @@ pytest
 
 - `data/out/<table>.parquet` + `.csv` (gitignored, regenerate any time) and `data/out/manifest.json`
 - `services/agents/data/mock/features.json` (committed; the agents' mock feature store)
+- `services/agents/data/mock/merchant_ledger.json` + `screenshots.json` (committed; PayGuard mocks, see below)
 
 Same seed means byte-identical files (`tests/test_determinism.py`). Options: `--out DIR`,
 `--features PATH`, `--no-features`.
@@ -76,6 +77,22 @@ The demo rows (`payer_demo_001..004` and the six demo payees) are **pinned**. Th
 from `generator/pinned_features.json` and always win over generated rows, because the demo
 fixtures and the agents' tests depend on them. Generated VPAs always contain digits, so they can
 never collide with the hand-written VPAs in tests and evals (e.g. `friend.regular@synthbank`).
+
+## PayGuard mocks
+
+- **`merchant_ledger.json`:** every ledger entry from the last 30 days for 4 merchants, including the demo
+  merchant `MER-DEMO-0042`, copied unchanged from `merchant_ledger`. Mock mode and BigQuery mode
+  therefore agree.
+- **`screenshots.json`:** what OCR / Gemini "reads" off 30 synthetic screenshots, keyed by URI:
+  `amount`, `txn_id`, `vpa`, `timestamp`, `tamper_hints`, plus `shown_at`. The `_case` field holds
+  the test labels. There are 11 genuine screenshots (8 settled, 3 pending) and 19 fakes:
+  - demo 3, plus 5 more with tamper hints
+  - 4 with a made-up transaction id
+  - 4 with an edited amount
+  - 2 with an edited VPA
+  - 3 reused old screenshots
+- **Demo 3 is pinned exactly as in the fixture.** Its transaction id is reserved, so it never
+  appears in any ledger. `tests/test_payguard_mocks.py` checks this.
 
 ## BigQuery (`data/bq/`)
 

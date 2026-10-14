@@ -1,4 +1,4 @@
-"""PayGuard route. The ledger check itself is still a stub behind one function."""
+"""PayGuard route, backed by trustshield_agents.verify_merchant_payment (mock mode)."""
 
 from __future__ import annotations
 
@@ -11,12 +11,13 @@ from trustshield_gateway.merchant_service import LEDGER_LOOKUP_EVIDENCE_ID
 REQUEST = load_fixture("demo3_fake_screenshot_12k")["request"]
 
 
-async def test_merchant_verify_returns_the_placeholder_result(client):
+async def test_merchant_verify_flags_the_demo3_screenshot(client):
     resp = await client.post("/api/v1/merchant/payment-verify", headers=merchant(), json=REQUEST)
     assert resp.status_code == 200, resp.text
     body = resp.json()
-    assert body["payment_status"] == "not_found_in_ledger"
-    assert body["risk_level"] == "medium"
+    assert body["payment_status"] == "suspicious"
+    assert body["risk_level"] == "high"
+    assert body["extracted"]["txn_id"] == REQUEST["claimed_transaction_id"]
     assert body["audit_id"]
     assert body["recommended_action"] and body["explanation"]
 
