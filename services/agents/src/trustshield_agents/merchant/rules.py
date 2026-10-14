@@ -15,6 +15,7 @@ for any credential.
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta
 
 from trustshield_contracts import (
@@ -53,6 +54,30 @@ _HINT_TEXT = {
     TamperHint.MISALIGNED_TEXT: "some text is out of line with the rest of the receipt",
     TamperHint.UNUSUAL_LAYOUT: "the layout doesn't match a standard payment receipt",
 }
+
+
+# Identifiers come from the request or the image, so they are untrusted. One that looks like a
+# credential word (e.g. a claimed id "otp-1" or a VPA "pin@bank") would make the gateway's
+# Governance block the whole answer, so such values are never echoed. Union of the agents'
+# guardrail and the gateway's rule-3 pattern.
+_CREDENTIAL_WORD = re.compile(
+    r"\b(otp|one[- ]time password|upi[- ]?pin|atm[- ]?pin|m-?pin|pin|password|passcode|cvv|cvc|"
+    r"card)\b",
+    re.IGNORECASE,
+)
+_PLAIN_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._@-]{0,63}")
+
+LEDGER_UNAVAILABLE = (
+    "Your ledger couldn't be checked just now, so this payment can't be confirmed yet. That is "
+    "not a sign of a problem with the payment."
+)
+
+
+def _show(value: str | None, instead: str) -> str:
+    """The identifier itself if it is plain and safe to echo, else a neutral description."""
+    if value and _PLAIN_ID.fullmatch(value) and not _CREDENTIAL_WORD.search(value):
+        return value
+    return instead
 
 
 def _rupees(amount: float) -> str:
@@ -109,11 +134,13 @@ def decide(
     entry: LedgerEntry | None,
     rules: MerchantRules,
     now: datetime,
+    ledger_unavailable: bool = False,
 ) -> MerchantVerifyResponse:
     shown_at = as_aware(ex.shown_at) or now
     ts = as_aware(ex.timestamp)
 
-    hints = [h for h in ex.tamper_hints if h is not TamperHint.FUTURE_TIMESTAMP]
+    # Dedupe (a model can repeat a hint); the future-timestamp check is ours, not the extractor's.
+    hints = list(dict.fromkeys(h for h in ex.tamper_hints if h is not TamperHint.FUTURE_TIMESTAMP))
     if ts is not None and ts - shown_at > timedelta(seconds=rules.future_tolerance_seconds):
         hints.insert(0, TamperHint.FUTURE_TIMESTAMP)
 
@@ -124,7 +151,7 @@ def decide(
         )
 
     claimed = _rupees(req.claimed_amount)
-    txn = req.claimed_transaction_id
+    txn = _show(req.claimed_transaction_id, "the one entered")
 
     def respond(status: PaymentStatus, risk: RiskLevel, explanation: str) -> MerchantVerifyResponse:
         return MerchantVerifyResponse(
@@ -134,6 +161,10 @@ def decide(
             recommended_action=ACTIONS[status],
             explanation=explanation,
         )
+
+    if entry is None and ledger_unavailable:
+        # Never guess from a partial fallback: say plainly that the ledger couldn't be read.
+        return respond(PaymentStatus.NOT_FOUND_IN_LEDGER, RiskLevel.MEDIUM, LEDGER_UNAVAILABLE)
 
     if entry is None:
         missing = f"No {claimed} credit with transaction ID {txn} appears in your ledger."
@@ -152,11 +183,12 @@ def decide(
         )
 
     ledger_amount = _rupees(entry.amount)
+    entry_txn = _show(entry.txn_id, "this payment")
     problems: list[str] = []
     amount_problem = False
     if entry.entry_type != "credit":
         problems.append(
-            f"transaction {entry.txn_id} is a {entry.entry_type} you sent, not a payment you received"
+            f"transaction {entry_txn} is a {entry.entry_type} you sent, not a payment you received"
         )
     # One phrase for the amount: the screenshot's if it differs, else the claimed one.
     for label, value in (("screenshot", ex.amount), ("claimed", req.claimed_amount)):
@@ -168,10 +200,20 @@ def decide(
             break
     if ex.vpa and ex.vpa.lower() != entry.merchant_vpa.lower():
         problems.append(
-            f"the screenshot shows the payment going to {ex.vpa}, not your UPI ID {entry.merchant_vpa}"
+            f"the screenshot shows the payment going to {_show(ex.vpa, 'a different UPI ID')}, "
+            f"not your UPI ID {_show(entry.merchant_vpa, 'on file')}"
         )
     if ex.txn_id and ex.txn_id != entry.txn_id:
-        problems.append(f"the screenshot shows transaction ID {ex.txn_id}, not {entry.txn_id}")
+        problems.append(
+            f"the screenshot shows transaction ID {_show(ex.txn_id, 'a different one')}, "
+            f"not {entry_txn}"
+        )
+    elif req.claimed_transaction_id != entry.txn_id:
+        # Found only through the id on the screenshot: the id the customer gave is not this one.
+        problems.append(
+            f"the transaction ID entered ({_show(req.claimed_transaction_id, 'as typed')}) "
+            f"is not this payment's ID {entry_txn}"
+        )
     initiated = as_aware(entry.initiated_at)
     if ts is not None and abs(ts - initiated) > timedelta(minutes=rules.time_tolerance_minutes):
         problems.append("the time on the screenshot doesn't match the time in your ledger")
@@ -184,18 +226,18 @@ def decide(
         return respond(
             PaymentStatus.INCONSISTENT,
             RiskLevel.HIGH if amount_problem or entry.entry_type != "credit" else RiskLevel.MEDIUM,
-            f"Transaction {entry.txn_id} is in your ledger, but {_join(problems)}.",
+            f"Transaction {entry_txn} is in your ledger, but {_join(problems)}.",
         )
     if entry.status != "settled":
         return respond(
             PaymentStatus.PENDING,
             RiskLevel.MEDIUM,
-            f"A {ledger_amount} credit with transaction ID {entry.txn_id} is in your ledger but "
+            f"A {ledger_amount} credit with transaction ID {entry_txn} is in your ledger but "
             "hasn't settled yet.",
         )
     return respond(
         PaymentStatus.VERIFIED,
         RiskLevel.LOW,
-        f"A {ledger_amount} credit with transaction ID {entry.txn_id} is in your ledger and has "
+        f"A {ledger_amount} credit with transaction ID {entry_txn} is in your ledger and has "
         "settled.",
     )

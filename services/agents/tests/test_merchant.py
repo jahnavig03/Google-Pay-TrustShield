@@ -25,6 +25,7 @@ from trustshield_agents.merchant.ledgers import (
     BigQueryMerchantLedger,
     FallbackLedger,
     JsonMerchantLedger,
+    LedgerUnavailable,
 )
 from trustshield_agents.merchant.models import Extraction, LedgerEntry, TamperHint, load_rules
 from trustshield_agents.merchant.rules import decide
@@ -185,24 +186,77 @@ def test_time_mismatch_is_inconsistent():
     assert run(ex).payment_status == PaymentStatus.INCONSISTENT
 
 
-async def test_lookup_retries_with_the_txn_id_read_off_the_screenshot():
-    """A typo in the claimed id still finds the payment the screenshot shows."""
+class OneEntry:
+    name = "one"
 
-    class OneEntry:
-        name = "one"
+    async def find(self, merchant_id, txn_id):
+        return ENTRY if txn_id == ENTRY.txn_id else None
 
-        async def find(self, merchant_id, txn_id):
-            return ENTRY if txn_id == ENTRY.txn_id else None
 
-    class Reads:
-        name = "reads"
+class Reads:
+    """An extractor that reads fixed details off any screenshot."""
 
-        async def extract(self, uri):
-            return Extraction(amount=500, txn_id=ENTRY.txn_id, vpa=ENTRY.merchant_vpa)
+    name = "reads"
 
+    def __init__(self, **fields):
+        self.fields = {"amount": 500, "txn_id": ENTRY.txn_id, "vpa": ENTRY.merchant_vpa, **fields}
+
+    async def extract(self, uri):
+        return Extraction(**self.fields)
+
+
+async def test_claimed_id_that_differs_from_the_found_payment_is_inconsistent():
+    """Found only via the screenshot's id: someone else's real payment must not verify."""
     req = REQ.model_copy(update={"claimed_transaction_id": "999999999999"})
     resp = await verify_with(req, MerchantServices(Reads(), OneEntry(), load_rules()), now=NOW)
-    assert resp.payment_status == PaymentStatus.VERIFIED
+    assert resp.payment_status == PaymentStatus.INCONSISTENT
+    assert "999999999999" in resp.explanation and ENTRY.txn_id in resp.explanation
+
+
+@pytest.mark.parametrize(
+    ("claimed_id", "read"),
+    [
+        ("otp-1", {}),  # typed by the customer
+        ("123456789012", {"vpa": "pin@bank", "txn_id": ENTRY.txn_id}),  # read off the image
+        ("123456789012", {"txn_id": "password1"}),
+    ],
+)
+async def test_untrusted_identifiers_never_put_credential_words_in_the_text(claimed_id, read):
+    """Otherwise the gateway's Governance rule 3 would block the merchant's answer (422)."""
+    req = REQ.model_copy(update={"claimed_transaction_id": claimed_id})
+    for ledger in (OneEntry(), JsonMerchantLedger()):
+        services = MerchantServices(Reads(**read), ledger, load_rules())
+        resp = await verify_with(req, services, now=NOW)
+        text = f"{resp.explanation} {resp.recommended_action}"
+        assert customer_text_violations(text) == [], text
+
+
+async def test_unreachable_ledger_is_never_a_confident_verdict():
+    """BigQuery down for a merchant the JSON fallback doesn't hold: say so, don't guess."""
+
+    class Down:
+        name = "down"
+
+        async def find(self, merchant_id, txn_id):
+            raise RuntimeError("503")
+
+    ledger = FallbackLedger(Down(), JsonMerchantLedger())
+    with pytest.raises(LedgerUnavailable):
+        await ledger.find("MER-NOT-IN-MOCK", "111122223333")
+    hints = Reads(tamper_hints=[TamperHint.FONT_MISMATCH])
+    resp = await verify_with(REQ, MerchantServices(hints, ledger, load_rules()), now=NOW)
+    assert (resp.payment_status, resp.risk_level) == (
+        PaymentStatus.NOT_FOUND_IN_LEDGER,
+        RiskLevel.MEDIUM,
+    )
+    assert "couldn't be checked" in resp.explanation
+
+
+def test_repeated_hints_are_mentioned_once():
+    ex = Extraction(tamper_hints=[TamperHint.FONT_MISMATCH, TamperHint.FONT_MISMATCH])
+    resp = run(ex, entry=None)
+    assert resp.explanation.count("different font") == 1
+    assert "a sign the image" in resp.explanation
 
 
 # ---- adapters -------------------------------------------------------------------------------
@@ -250,6 +304,23 @@ async def test_gemini_extractor_parses_the_json_schema():
     contents, config = caller.calls[0]
     assert contents[0].file_data.file_uri == "gs://b/x.png"
     assert config.response_schema is ScreenshotReading and config.temperature == 0.0
+
+
+async def test_gemini_keeps_when_a_known_synthetic_screenshot_was_shown():
+    """gcp mode on a demo URI: the reading comes from Gemini, the shown_at metadata from the
+    mock; otherwise a genuine screenshot from 13 Oct would look like a reused old one."""
+    uri = uris_of("genuine_settled")[0]
+    shot = SHOTS[uri]
+    reading = ScreenshotReading(amount=shot["amount"], txn_id=shot["txn_id"], vpa=shot["vpa"])
+    caller = FakeCaller(SimpleNamespace(parsed=reading, text=reading.model_dump_json()))
+    gemini = GeminiScreenshotExtractor(caller, MockScreenshotExtractor())
+    ex = await gemini.extract(uri)
+    assert ex.source == "gemini"
+    assert ex.shown_at == datetime.fromisoformat(shot["shown_at"])
+    services = MerchantServices(gemini, JsonMerchantLedger(), load_rules())
+    resp = await verify_with(request_for(uri), services)
+    assert resp.payment_status == PaymentStatus.VERIFIED
+    assert (await gemini.extract("gs://somewhere/real-upload.png")).shown_at is None
 
 
 async def test_output_cap_leaves_room_for_thinking_tokens():

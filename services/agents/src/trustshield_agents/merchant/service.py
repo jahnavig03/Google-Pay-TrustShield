@@ -13,6 +13,7 @@ audit_id is left empty: the gateway's Governance fills it in.
 
 from __future__ import annotations
 
+import logging
 import os
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -22,10 +23,12 @@ from trustshield_contracts import MerchantVerifyRequest, MerchantVerifyResponse
 
 from ..settings import mode, require_env
 from .extractors import GeminiScreenshotExtractor, MockScreenshotExtractor
-from .ledgers import BigQueryMerchantLedger, FallbackLedger, JsonMerchantLedger
+from .ledgers import BigQueryMerchantLedger, FallbackLedger, JsonMerchantLedger, LedgerUnavailable
 from .models import MerchantRules, load_rules
 from .ports import MerchantLedger, ScreenshotExtractor
 from .rules import decide
+
+log = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -103,10 +106,15 @@ async def verify_with(
     req: MerchantVerifyRequest, services: MerchantServices, now: datetime | None = None
 ) -> MerchantVerifyResponse:
     extraction = await services.extractor.extract(req.uploaded_screenshot)
-    entry = await services.ledger.find(req.merchant_id, req.claimed_transaction_id)
-    if entry is None and extraction.txn_id and extraction.txn_id != req.claimed_transaction_id:
-        entry = await services.ledger.find(req.merchant_id, extraction.txn_id)
-    return decide(req, extraction, entry, services.rules, now or datetime.now(UTC))
+    now = now or datetime.now(UTC)
+    try:
+        entry = await services.ledger.find(req.merchant_id, req.claimed_transaction_id)
+        if entry is None and extraction.txn_id and extraction.txn_id != req.claimed_transaction_id:
+            entry = await services.ledger.find(req.merchant_id, extraction.txn_id)
+    except LedgerUnavailable as exc:
+        log.warning("merchant ledger unavailable: %s", exc)
+        return decide(req, extraction, None, services.rules, now, ledger_unavailable=True)
+    return decide(req, extraction, entry, services.rules, now)
 
 
 async def verify_merchant_payment(req: MerchantVerifyRequest) -> MerchantVerifyResponse:

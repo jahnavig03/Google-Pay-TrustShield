@@ -120,7 +120,13 @@ class GeminiScreenshotExtractor:
         except Exception as exc:  # noqa: BLE001 — the merchant check must not fail on the LLM
             log.warning("Gemini screenshot extraction failed, using fallback: %s", str(exc)[:300])
             return await self._fallback.extract(uri)
+        # When it was shown is metadata, not something the image says: keep the mock's value for
+        # a known (synthetic demo) URI; for a real upload it is "now".
+        shown_at = (
+            (await self._fallback.extract(uri)).shown_at if self._fallback.known(uri) else None
+        )
         return Extraction(
+            shown_at=shown_at,
             amount=reading.amount,
             txn_id=(reading.txn_id or "").strip() or None,
             vpa=(reading.vpa or "").strip().lower() or None,
