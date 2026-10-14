@@ -44,5 +44,25 @@ class MemoryDocumentStore:
                 raise KeyError(f"{collection}/{doc_id} does not exist")
             existing.update(copy.deepcopy(patch))
 
+    async def append(self, collection: str, doc_id: str, field: str, item: Any) -> None:
+        async with self._lock:
+            existing = self._data.get(collection, {}).get(doc_id)
+            if existing is None:
+                raise KeyError(f"{collection}/{doc_id} does not exist")
+            existing.setdefault(field, []).append(copy.deepcopy(item))
+
+    async def update_if_greater(
+        self, collection: str, doc_id: str, field: str, value: float, patch: dict[str, Any]
+    ) -> bool:
+        async with self._lock:
+            existing = self._data.get(collection, {}).get(doc_id)
+            if existing is None:
+                raise KeyError(f"{collection}/{doc_id} does not exist")
+            current = existing.get(field)
+            if current is not None and current >= value:
+                return False
+            existing.update({field: value, **copy.deepcopy(patch)})
+            return True
+
     async def close(self) -> None:
         return None
