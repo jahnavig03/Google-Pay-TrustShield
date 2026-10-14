@@ -98,15 +98,24 @@ async def test_invalid_payment_request_is_rejected(client):
 
 @requires_firestore_emulator
 async def test_85k_fixture_writes_to_the_firestore_emulator(emulator_app):
-    """Same flow against `firebase emulators:start --only firestore`."""
+    """Same flow against `firebase emulators:start --only firestore`, plus the demo replay.
+
+    The emulator keeps its data for as long as it is running, so this uses a transaction id of
+    its own. Sharing the fixture id would make the test pass once and then fail on the second
+    run against the same emulator.
+    """
+    import uuid
+
     import httpx
+
+    request = {**REQUEST, "transaction_id": f"TXN-EMULATOR-{uuid.uuid4().hex[:8].upper()}"}
 
     transport = httpx.ASGITransport(app=emulator_app)
     async with (
         emulator_app.router.lifespan_context(emulator_app),
         httpx.AsyncClient(transport=transport, base_url="http://gateway") as http,
     ):
-        resp = await http.post("/api/v1/payment-risk/evaluate", headers=customer(), json=REQUEST)
+        resp = await http.post("/api/v1/payment-risk/evaluate", headers=customer(), json=request)
         assert resp.status_code == 200, resp.text
         body = resp.json()
         assert body["decision"] == "HOLD_AND_ESCALATE"
@@ -116,6 +125,31 @@ async def test_85k_fixture_writes_to_the_firestore_emulator(emulator_app):
         store = emulator_app.state.services.store
         audit_row = await store.get(AUDIT_COLLECTION, body["audit_id"])
         assert audit_row is not None
-        assert audit_row["subject_id"] == REQUEST["transaction_id"]
+        assert audit_row["subject_id"] == request["transaction_id"]
         case_doc = await store.get(CASES_COLLECTION, body["case_id"])
         assert case_doc is not None and case_doc["status"] == "pending_approval"
+
+        # An analyst approves the escalation...
+        decided = await http.post(
+            f"/api/v1/cases/{body['case_id']}/decision",
+            headers={"X-Demo-Role": "analyst"},
+            json={
+                "action": "approve_escalation",
+                "analyst_id": "analyst_demo_01",
+                "reason": "Account-block urgency SMS and a brand-new payee.",
+            },
+        )
+        assert decided.status_code == 200, decided.text
+
+        # ...and the same transaction is scored again, as the demo replay does.
+        replay = await http.post("/api/v1/payment-risk/evaluate", headers=customer(), json=request)
+        assert replay.status_code == 200, replay.text
+        assert replay.json()["case_id"] == body["case_id"]
+        assert replay.json()["audit_id"] != body["audit_id"]
+
+        after = await store.get(CASES_COLLECTION, body["case_id"])
+        assert after["status"] == "escalated", "re-evaluation must not reset the case"
+        assert after["analyst_decision"] is not None
+        assert after["analyst_decision"]["analyst_id"] == "analyst_demo_01"
+        replays = [e for e in after["timeline"] if e["event_type"] == "risk_decision"]
+        assert len(replays) == 2
