@@ -1,0 +1,8 @@
+# Install with: pip install --prefer-binary -r requirements.txt
+# Faker is pinned to one major version: its name lists decide the generated names, so a new
+# major can change the output for the same seed.
+Faker>=40,<41
+pandas>=2.2,<4
+pyarrow>=15
+pytest>=8
+ruff>=0.5
