@@ -1,39 +1,37 @@
 /*
  * TrustShield simulator, styled with Material Design 3 (Google's open design system).
- * Colour roles are generated from OUR brand teal (#0f766e) with material-color-utilities.
+ * Colour roles are generated from OUR brand blue (#2f4fb5) with material-color-utilities.
+ * A deep royal blue on purpose: not Google's brand blue (#1a73e8).
  * Deliberately not Google Pay: no Google logos, no Google brand colours, no Google Sans,
  * no copy of Google Pay screens. Roboto and Material Symbols are open-source.
  */
 
 :root {
-  /* --- M3 colour roles, light (seed #0f766e) --- */
-  --md-primary: #006a63;
+  /* --- M3 colour roles, light (seed #2f4fb5) --- */
+  --md-primary: #3857bd;
   --md-on-primary: #ffffff;
-  --md-primary-container: #72f7ea;
-  --md-on-primary-container: #00201d;
-  --md-secondary: #4a6360;
+  --md-primary-container: #dce1ff;
+  --md-on-primary-container: #001550;
+  --md-secondary: #595d72;
   --md-on-secondary: #ffffff;
-  --md-secondary-container: #cce8e4;
-  --md-on-secondary-container: #051f1d;
-  --md-tertiary: #47617a;
-  --md-tertiary-container: #cee5ff;
-  --md-on-tertiary-container: #001d33;
+  --md-secondary-container: #dee1f9;
+  --md-on-secondary-container: #161b2c;
   --md-error: #ba1a1a;
   --md-on-error: #ffffff;
   --md-error-container: #ffdad6;
   --md-on-error-container: #410002;
-  --md-surface: #fafdfb;
-  --md-on-surface: #191c1c;
-  --md-on-surface-variant: #3f4947;
-  --md-outline: #6f7977;
-  --md-outline-variant: #bec9c6;
-  --md-inverse-surface: #2d3130;
-  --md-inverse-on-surface: #eff1f0;
+  --md-surface: #fefbff;
+  --md-on-surface: #1b1b1f;
+  --md-on-surface-variant: #45464f;
+  --md-outline: #767680;
+  --md-outline-variant: #c6c5d0;
+  --md-inverse-surface: #303034;
+  --md-inverse-on-surface: #f2f0f4;
   --md-surface-container-lowest: #ffffff;
-  --md-surface-container-low: #f2f4f2;
-  --md-surface-container: #eceeed;
-  --md-surface-container-high: #e6e9e7;
-  --md-surface-container-highest: #e0e3e1;
+  --md-surface-container-low: #f5f3f7;
+  --md-surface-container: #efedf1;
+  --md-surface-container-high: #eae7ec;
+  --md-surface-container-highest: #e4e1e6;
   /* Custom roles for payment states (M3 "custom colours"). */
   --md-success: #1e6c35;
   --md-success-container: #a6f4ae;
@@ -61,33 +59,30 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --md-primary: #51dbce;
-    --md-on-primary: #003733;
-    --md-primary-container: #00504a;
-    --md-on-primary-container: #72f7ea;
-    --md-secondary: #b1ccc8;
-    --md-on-secondary: #1c3532;
-    --md-secondary-container: #324b48;
-    --md-on-secondary-container: #cce8e4;
-    --md-tertiary: #aec9e6;
-    --md-tertiary-container: #2f4961;
-    --md-on-tertiary-container: #cee5ff;
+    --md-primary: #b6c4ff;
+    --md-on-primary: #002780;
+    --md-primary-container: #193da4;
+    --md-on-primary-container: #dce1ff;
+    --md-secondary: #c2c5dd;
+    --md-on-secondary: #2b3042;
+    --md-secondary-container: #424659;
+    --md-on-secondary-container: #dee1f9;
     --md-error: #ffb4ab;
     --md-on-error: #690005;
     --md-error-container: #93000a;
     --md-on-error-container: #ffdad6;
-    --md-surface: #191c1c;
-    --md-on-surface: #e0e3e1;
-    --md-on-surface-variant: #bec9c6;
-    --md-outline: #899391;
-    --md-outline-variant: #3f4947;
-    --md-inverse-surface: #e0e3e1;
-    --md-inverse-on-surface: #2d3130;
-    --md-surface-container-lowest: #0b0f0e;
-    --md-surface-container-low: #191c1c;
-    --md-surface-container: #1d2020;
-    --md-surface-container-high: #272b2a;
-    --md-surface-container-highest: #323535;
+    --md-surface: #1b1b1f;
+    --md-on-surface: #e4e1e6;
+    --md-on-surface-variant: #c6c5d0;
+    --md-outline: #90909a;
+    --md-outline-variant: #45464f;
+    --md-inverse-surface: #e4e1e6;
+    --md-inverse-on-surface: #303034;
+    --md-surface-container-lowest: #0e0e11;
+    --md-surface-container-low: #1b1b1f;
+    --md-surface-container: #1f1f23;
+    --md-surface-container-high: #2a2a2d;
+    --md-surface-container-highest: #343438;
     --md-success: #8bd794;
     --md-success-container: #00531f;
     --md-on-success-container: #a6f4ae;
@@ -371,7 +366,7 @@ button.danger:hover:not(:disabled) {
 
 /* ---------- notices, progress, chips ---------- */
 .notice { border-radius: var(--md-shape-md); padding: 0.75rem 1rem; margin: 0 0 1rem; font-size: 0.875rem; line-height: 1.25rem; }
-.notice-info { background: var(--md-tertiary-container); color: var(--md-on-tertiary-container); }
+.notice-info { background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
 .notice-ok { background: var(--md-success-container); color: var(--md-on-success-container); }
 .notice-error { background: var(--md-error-container); color: var(--md-on-error-container); }
 
@@ -401,7 +396,7 @@ button.danger:hover:not(:disabled) {
   color: var(--md-on-surface-variant);
 }
 .badge-ok { background: var(--md-success-container); color: var(--md-on-success-container); border-color: transparent; }
-.badge-caution { background: var(--md-tertiary-container); color: var(--md-on-tertiary-container); border-color: transparent; }
+.badge-caution { background: var(--md-primary-container); color: var(--md-on-primary-container); border-color: transparent; }
 .badge-warning { background: var(--md-warning-container); color: var(--md-on-warning-container); border-color: transparent; }
 .badge-danger { background: var(--md-error-container); color: var(--md-on-error-container); border-color: transparent; }
 
@@ -418,7 +413,7 @@ button.danger:hover:not(:disabled) {
   font-variation-settings: "FILL" 1;
 }
 .tone-ok .result-icon { background: var(--md-success-container); color: var(--md-on-success-container); }
-.tone-caution .result-icon { background: var(--md-tertiary-container); color: var(--md-on-tertiary-container); }
+.tone-caution .result-icon { background: var(--md-primary-container); color: var(--md-on-primary-container); }
 .tone-warning .result-icon { background: var(--md-warning-container); color: var(--md-on-warning-container); }
 .tone-danger .result-icon { background: var(--md-error-container); color: var(--md-on-error-container); }
 .tone-neutral .result-icon { background: var(--md-surface-container-highest); color: var(--md-on-surface-variant); }
