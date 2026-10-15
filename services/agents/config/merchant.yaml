@@ -1,0 +1,10 @@
+# PayGuard merchant check (src/trustshield_agents/merchant). Thresholds live here, not in code.
+
+# ₹ difference allowed between the screenshot / claimed amount and the ledger amount.
+amount_tolerance: 0.5
+# Screenshot time vs the ledger's time for the same transaction id.
+time_tolerance_minutes: 15
+# A real, settled payment shown again this long after it was made = a reused old screenshot.
+stale_after_hours: 24
+# A screenshot whose timestamp is this far after the moment it was shown has a future timestamp.
+future_tolerance_seconds: 60

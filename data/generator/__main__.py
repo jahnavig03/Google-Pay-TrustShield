@@ -1,4 +1,8 @@
-"""python -m generator --seed 42 [--out data/out] [--features PATH | --no-features]"""
+"""python -m generator --seed 42 [--out data/out] [--features PATH | --no-features]
+
+Writes data/out/ plus the agents' mock data next to --features: features.json,
+merchant_ledger.json and screenshots.json (PayGuard).
+"""
 
 from __future__ import annotations
 
@@ -6,7 +10,13 @@ import argparse
 import time
 from pathlib import Path
 
-from .output import DEFAULT_FEATURES, DEFAULT_OUT, write_features, write_tables
+from .output import (
+    DEFAULT_FEATURES,
+    DEFAULT_OUT,
+    write_features,
+    write_payguard_mocks,
+    write_tables,
+)
 from .pipeline import generate
 
 
@@ -18,7 +28,9 @@ def main(argv: list[str] | None = None) -> None:
         "--features", type=Path, default=DEFAULT_FEATURES, help="where to write features.json"
     )
     parser.add_argument(
-        "--no-features", action="store_true", help="don't touch the agents' features.json"
+        "--no-features",
+        action="store_true",
+        help="don't touch the agents' mock data (features + PayGuard files)",
     )
     args = parser.parse_args(argv)
 
@@ -32,6 +44,11 @@ def main(argv: list[str] | None = None) -> None:
         print(
             f"features.json    {len(features['payers']):,} payers, "
             f"{len(features['payees']):,} payees -> {args.features}"
+        )
+        ledger, shots = write_payguard_mocks(ds, args.features.parent)
+        print(
+            f"PayGuard mocks   {len(ledger['entries']):,} ledger entries, "
+            f"{len(shots['screenshots'])} screenshots -> {args.features.parent}"
         )
     print(f"seed {args.seed} -> {args.out} in {time.perf_counter() - started:.1f}s")
 
