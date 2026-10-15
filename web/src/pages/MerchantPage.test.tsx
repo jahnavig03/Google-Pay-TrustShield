@@ -11,7 +11,7 @@ const VERIFY = "POST /api/v1/merchant/payment-verify";
 describe("/merchant", () => {
   it("demo 3: sends the fixture as merchant and shows a suspicious verdict", async () => {
     const { calls } = mockGateway({ [VERIFY]: () => ({ body: demo3.expected_response }) });
-    renderApp("/merchant", "merchant");
+    renderApp("/customer/merchant");
 
     await userEvent.click(screen.getByRole("button", { name: /Demo 3/ }));
     await userEvent.click(screen.getByRole("button", { name: "Check payment" }));
@@ -27,7 +27,7 @@ describe("/merchant", () => {
 
   it("rejects a screenshot over 5 MB before sending anything", async () => {
     const { calls } = mockGateway({});
-    renderApp("/merchant", "merchant");
+    renderApp("/customer/merchant");
     const big = new File([new Uint8Array(MAX_SCREENSHOT_BYTES + 1)], "big.png", {
       type: "image/png",
     });
@@ -38,7 +38,7 @@ describe("/merchant", () => {
 
   it("asks for a screenshot if none was added", async () => {
     mockGateway({});
-    renderApp("/merchant", "merchant");
+    renderApp("/customer/merchant");
     await userEvent.type(screen.getByLabelText(/Amount the customer/), "500");
     await userEvent.type(screen.getByLabelText(/Transaction ID/), "123");
     await userEvent.click(screen.getByRole("button", { name: "Check payment" }));

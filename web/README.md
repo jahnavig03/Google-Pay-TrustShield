@@ -5,14 +5,22 @@
 Not affiliated with Google Pay."* The look is our own neutral design, with no Google Pay logo,
 colours or layout.
 
-| Route | Role (`X-Demo-Role`) | Demo |
+| Route | Who | What |
 | --- | --- | --- |
-| `/pay` | customer | Payment simulator + warning sheet (PaySafe). Presets: demo 1 (₹85k scam), rent, everyday payment. |
-| `/analyst` | analyst | Case list → case detail (signals, timeline, linked accounts, evidence), "Ask why", Approve / Outreach / Close with a reason (PayInvestigator) |
-| `/merchant` | merchant | Screenshot + claimed amount / UTR → verdict card (PayGuard). Demo 3 preset; uploads ≤ 5 MB as `data:` URIs. |
+| `/` | everyone | Landing: logo, name, and two ways in |
+| `/customer` | customer | Choose Payment simulator or Merchant check (one-line descriptions) |
+| `/customer/pay`, `/customer/merchant` | customer | Tabbed panel with only these two sections, opened on the chosen one |
+| `/analyst/login` | analyst | Analyst ID + access code |
+| `/analyst`, `/analyst/:caseId` | analyst (signed in) | Case queue (summary tiles, filters, search) and case detail (risk meter, tabs: Overview, Timeline, Accounts, Evidence & Q&A, Decision) |
 
-Clicking a page in the top nav switches to that page's demo role; the role switcher overrides it.
-A page used with the wrong role shows a notice and makes no calls.
+Each page sends its own `X-Demo-Role` (customer / merchant / analyst) automatically.
+
+**Analyst sign-in is a demo gate, not security.** The access code comes from
+`VITE_ANALYST_ACCESS_CODE` (see `.env.example`; the default is `trustshield-demo`). Like every
+`VITE_*` value it ships in the browser bundle, and the gateway still trusts `X-Demo-Role`. Real
+protection = Firebase Auth or IAP in front of the analyst routes (PRD §7). The session lives in
+`sessionStorage`, so closing the tab signs out; decisions are recorded under the signed-in
+analyst ID.
 
 ## Run locally
 

@@ -11,7 +11,6 @@ import {
   Badge,
   ErrorNotice,
   Icon,
-  RoleNotice,
   Spinner,
   formatDateTime,
   formatRupees,
@@ -99,7 +98,6 @@ export function MerchantPage() {
           before you hand over the goods.
         </p>
       </header>
-      <RoleNotice needs="merchant" />
 
       <div className="two-col">
         <form className="card form" onSubmit={submit} aria-label="Screenshot check">

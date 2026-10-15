@@ -4,7 +4,6 @@ import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 
 import { App } from "../App";
-import type { Role } from "../api/client";
 
 export interface Call {
   method: string;
@@ -41,13 +40,17 @@ export function mockGateway(routes: Record<string, Handler>) {
   return { calls, fetchMock };
 }
 
-export function renderApp(path: string, role: Role) {
+/** Render the whole app at `path`. `analystId` pre-signs-in an analyst (session storage). */
+export function renderApp(path: string, options: { analystId?: string } = {}) {
+  if (options.analystId) {
+    window.sessionStorage.setItem("trustshield.analystSession", options.analystId);
+  }
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <App queryClient={queryClient} initialRole={role} />
+      <App queryClient={queryClient} />
     </MemoryRouter>,
   );
 }

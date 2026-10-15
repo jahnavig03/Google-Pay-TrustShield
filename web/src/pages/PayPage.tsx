@@ -3,7 +3,7 @@ import { useState, type FormEvent } from "react";
 
 import demo1 from "../../../shared/contracts/fixtures/demo1_payment_85k.json";
 import { describeError, type PaymentRiskRequest, type PaymentRiskResponse } from "../api/client";
-import { DECISION_TONE, ErrorNotice, Icon, RoleNotice, Spinner } from "../components/ui";
+import { DECISION_TONE, ErrorNotice, Icon, Spinner } from "../components/ui";
 import { usePageRole, useRole } from "../role";
 
 type FormState = Omit<PaymentRiskRequest, "transaction_id" | "currency" | "attachment_uri">;
@@ -115,7 +115,6 @@ export function PayPage() {
           Try a UPI payment. TrustShield checks it before it goes through and explains why.
         </p>
       </header>
-      <RoleNotice needs="customer" />
 
       <div className="two-col">
         <form className="card form" onSubmit={submit} aria-label="Payment details">
