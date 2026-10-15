@@ -73,6 +73,8 @@ Any R ≥ 0.70 opens a case (`analyst_case_required = true`).
 - Gateway: `cd services/gateway && source .venv/bin/activate && uvicorn main:app --reload` → http://localhost:8000/docs
 - Gateway roles: send `X-Demo-Role: customer | analyst | merchant` (evaluate / `/cases*` / merchant). Missing header → 401, wrong role → 403.
 - Gateway image (build from the REPO ROOT): `docker build -f services/gateway/Dockerfile -t trustshield-gateway .` then `docker run --rm -p 8080:8080 -e TRUSTSHIELD_MODE=mock trustshield-gateway`
+- Web: `cd web && npm install && npm run dev` → http://localhost:5173 (needs the gateway on :8000; Node 24). `npm test`, `npm run lint`, `npm run build`; `npm run gen:api` after any contract change.
+- Web deploy: `cd web && VITE_API_BASE_URL=<cloud-run-url> npm run build && cd .. && firebase deploy --only hosting --project qualified-sun-511214-t1` (then add the Hosting URL to the gateway's `CORS_ALLOW_ORIGINS`)
 - Agents install: `cd services/agents && python3 -m venv .venv && source .venv/bin/activate && pip install --prefer-binary -r requirements.txt -e ../../shared/contracts -e .`
 - Agents demo: `cd services/agents && source .venv/bin/activate && python -m trustshield_agents.demo1`
 - Risk engine demo: `python -m trustshield_agents.risk demo` (agents venv)
