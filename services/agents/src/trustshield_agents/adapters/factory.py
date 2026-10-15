@@ -3,13 +3,20 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import TYPE_CHECKING
 
-from ..ports import CustomerMessageWriter, EvidenceProvider, FeatureStore, ScamClassifier
+from ..ports import (
+    CustomerMessageWriter,
+    EvidenceProvider,
+    FeatureStore,
+    PayeeDirectory,
+    ScamClassifier,
+)
 from ..settings import feature_store_backend, mode, require_env
 from .json_feature_store import JsonFeatureStore
+from .json_payee_directory import JsonPayeeDirectory
 from .rule_scam_classifier import RuleScamClassifier
 from .static_evidence import StaticEvidenceProvider
 from .template_message_writer import TemplateMessageWriter
@@ -26,6 +33,8 @@ class Services:
     evidence: EvidenceProvider
     messages: CustomerMessageWriter
     gemini: GeminiCaller | None = None  # gcp mode: call stats for demos / evals
+    # Registered payee names for QR checks. JSON in both modes until a BigQuery directory exists.
+    directory: PayeeDirectory = field(default_factory=JsonPayeeDirectory)
 
 
 def _feature_store() -> FeatureStore:

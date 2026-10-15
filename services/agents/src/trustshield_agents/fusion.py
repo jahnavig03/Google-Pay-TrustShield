@@ -13,6 +13,7 @@ from trustshield_contracts import (
 
 from .adapters.factory import Services
 from .ports import MessageInputs, PayeeFeatures, PayerFeatures, ScamAssessment, ScamPattern
+from .qr import assess_qr, merge_qr
 from .risk import RiskConfig, RiskInputs, RiskResult, load_risk_config, score
 
 _ACTIONS = {
@@ -49,6 +50,7 @@ def build_risk_inputs(
         scam_pattern=scam.pattern.value,
         scam_cues=scam.manipulation_cues,
         has_message=bool((req.message_context or "").strip()),
+        has_qr=req.qr is not None,
         payee_reported_links=payee.reported_links,
         payee_fan_in_24h=payee.fan_in_24h,
         payee_is_merchant=payee.is_merchant,
@@ -79,6 +81,9 @@ async def fuse(
     cfg: RiskConfig | None = None,
 ) -> PaymentRiskResponse:
     cfg = cfg or load_risk_config()
+    if req.qr is not None:
+        registered = await services.directory.registered_name(req.payee_vpa)
+        scam = merge_qr(scam, assess_qr(req.qr, registered, payee.is_merchant))
     result = score(build_risk_inputs(req, payer, payee, scam), cfg)
     risk_type = risk_type_for(result, scam, cfg)
     safe_actions = safe_actions_for(result.decision)
