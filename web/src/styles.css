@@ -148,7 +148,6 @@ code { font-family: "Roboto Mono", ui-monospace, monospace; font-size: 0.8125rem
 }
 .brand { display: flex; align-items: center; gap: 0.5rem; font-size: 1.375rem; color: var(--md-on-surface); }
 .brand svg { color: var(--md-primary); }
-.brand small { font-size: 0.75rem; color: var(--md-on-surface-variant); letter-spacing: 0.05em; text-transform: uppercase; }
 .nav { display: flex; gap: 0.25rem; margin-left: 1rem; }
 .nav-link {
   display: inline-flex;
@@ -190,7 +189,6 @@ code { font-family: "Roboto Mono", ui-monospace, monospace; font-size: 0.8125rem
   .two-col, .analyst-layout, .detail-grid { grid-template-columns: 1fr; }
   .content { padding: 1rem 1rem 6.5rem; }
   .topbar { min-height: 56px; }
-  .brand small { display: none; }
   .nav {
     position: fixed;
     left: 0;

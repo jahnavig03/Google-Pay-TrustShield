@@ -40,7 +40,6 @@ export function Layout() {
           <div className="brand">
             <ShieldIcon />
             <span>TrustShield</span>
-            <small>simulator</small>
           </div>
           <nav className="nav" aria-label="Main">
             {NAV.map((item) => (
