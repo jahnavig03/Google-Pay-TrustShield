@@ -5,6 +5,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+from .bq_tables import write_bq_tables
 from .features import build_features, dumps
 from .pipeline import TABLES, Dataset
 
@@ -18,9 +22,21 @@ def write_tables(ds: Dataset, out_dir: Path) -> dict[str, int]:
     counts = {}
     for name in TABLES:
         df = ds[name]
-        df.to_parquet(out_dir / f"{name}.parquet", index=False, engine="pyarrow")
+        table = pa.Table.from_pandas(df, preserve_index=False)
+        # pandas 3 strings are Arrow large_string; plain string is the safest type for bq load.
+        table = table.cast(
+            pa.schema(
+                [
+                    f.with_type(pa.string()) if pa.types.is_large_string(f.type) else f
+                    for f in table.schema
+                ],
+                metadata=table.schema.metadata,
+            )
+        )
+        pq.write_table(table, out_dir / f"{name}.parquet")
         df.to_csv(out_dir / f"{name}.csv", index=False, lineterminator="\n")
         counts[name] = len(df)
+    counts.update(write_bq_tables(ds.seed, out_dir))  # Parquet only: meta + pinned demo rows
     manifest = {"seed": ds.seed, "row_counts": counts}
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     return counts
