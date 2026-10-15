@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { useState, type FormEvent } from "react";
+import { useLayoutEffect, useRef, useState, type FormEvent } from "react";
 
 import demo1 from "../../../shared/contracts/fixtures/demo1_payment_85k.json";
 import { describeError, type PaymentRiskRequest, type PaymentRiskResponse } from "../api/client";
@@ -82,11 +82,24 @@ function newTransactionId(): string {
   return `TXN-${Date.now()}`;
 }
 
+/** Grow a textarea to fit its text (no inner scrollbar); it can still be dragged taller. */
+function useAutoHeight(value: string) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight + 2}px`; // + borders
+  }, [value]);
+  return ref;
+}
+
 export function PayPage() {
   usePageRole("customer");
   const { api } = useRole();
   const [form, setForm] = useState<FormState>(PRESETS[0].form);
   const [chosenAction, setChosenAction] = useState<string | null>(null);
+  const messageRef = useAutoHeight(form.message_context ?? "");
 
   const evaluate = useMutation({
     mutationFn: (body: PaymentRiskRequest) => api.evaluatePayment(body),
@@ -197,7 +210,9 @@ export function PayPage() {
           <label>
             Message that asked you to pay (optional)
             <textarea
-              rows={2}
+              ref={messageRef}
+              className="message-box"
+              rows={4}
               value={form.message_context ?? ""}
               placeholder="Paste the SMS, chat or call notes here"
               onChange={(e) => update("message_context", e.target.value)}
