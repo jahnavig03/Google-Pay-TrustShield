@@ -28,6 +28,15 @@ protection = Firebase Auth or IAP in front of the analyst routes (PRD §7). The 
 `sessionStorage`, so closing the tab signs out; decisions are recorded under the signed-in
 analyst ID.
 
+## QR scanning (Payment simulator)
+
+**Scan QR** (next to "Pay to") opens a dialog: upload a photo, use the camera, or pick a sample QR
+(`public/demo-qr/*.png`, synthetic). Decoding runs on the device with `jsQR`; the image is never
+uploaded. A `upi://pay?pa=…&pn=…&am=…&mc=…` code fills the form and is sent as the optional `qr`
+field, so the agents can check that the QR's name matches the UPI ID's registered owner and that a
+shop QR (`mc=`) belongs to a registered merchant. Anything else (a website link, a collect request)
+is flagged on the device as "not a payment" and never sent.
+
 ## Run locally
 
 ```bash

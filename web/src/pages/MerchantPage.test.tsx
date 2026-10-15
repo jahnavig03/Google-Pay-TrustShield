@@ -25,6 +25,19 @@ describe("/merchant", () => {
     expect(calls[0].body).toEqual(demo3.request);
   });
 
+  it("each example loads its own synthetic screenshot", async () => {
+    const { calls } = mockGateway({ [VERIFY]: () => ({ body: demo3.expected_response }) });
+    renderApp("/customer/merchant");
+    await userEvent.click(screen.getByRole("button", { name: /Genuine ₹1,488/ }));
+    await userEvent.click(screen.getByRole("button", { name: "Check payment" }));
+    await screen.findByRole("article", { name: "Verification result" });
+    expect(calls[0].body).toMatchObject({
+      merchant_id: "MER-DEMO-0042",
+      claimed_amount: 1488,
+      claimed_transaction_id: "422056521795",
+    });
+  });
+
   it("rejects a screenshot over 5 MB before sending anything", async () => {
     const { calls } = mockGateway({});
     renderApp("/customer/merchant");

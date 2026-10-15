@@ -31,7 +31,9 @@ function Shell({ nav = [], actions }: { nav?: NavItem[]; actions?: ReactNode }) 
         </div>
         <header className="topbar">
           <Link to="/" className="brand" aria-label="TrustShield home">
-            <ShieldMark />
+            <span className="brand-tile">
+              <ShieldMark size={20} />
+            </span>
             <span>TrustShield</span>
           </Link>
           {nav.length > 0 && (

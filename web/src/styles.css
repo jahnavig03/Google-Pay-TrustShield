@@ -170,7 +170,7 @@ code { font-family: "Roboto Mono", ui-monospace, monospace; font-size: 0.8125rem
   background: var(--md-surface-container);
 }
 .brand { display: flex; align-items: center; gap: 0.5rem; font-size: 1.375rem; color: var(--md-on-surface); text-decoration: none; }
-.brand svg { color: var(--c-mono); } /* single-colour asset */
+.brand svg { color: var(--md-primary); }
 .nav { display: flex; gap: 0.25rem; margin-left: 1rem; }
 .nav-link {
   display: inline-flex;
@@ -773,7 +773,7 @@ blockquote {
 .page-header.compact { margin-bottom: 0.75rem; }
 .page-header.compact h1 { margin-bottom: 0; }
 .page-header.compact p { margin: 0; font-size: 0.875rem; }
-@media (min-width: 721px) {
+@media (min-width: 1024px) {
   .two-col:has(.form.dense) { grid-template-columns: minmax(320px, 500px) 1fr; }
 }
 .form.dense { gap: 0.625rem; padding: 1rem 1.25rem; }
@@ -796,3 +796,172 @@ blockquote {
   overflow-y: hidden;
   resize: vertical;
 }
+
+/* ---------- brand tile (same as the landing logo, smaller) ---------- */
+.brand-tile {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: var(--md-primary-container);
+  color: var(--md-primary);
+}
+
+/* ---------- payment form fills the screen height (desktop / tablet) ---------- */
+@media (min-width: 1024px) and (min-height: 600px) {
+  .form.fill-screen { min-height: calc(100dvh - 196px); }
+  .form.fill-screen label.grow { flex: 1 1 auto; display: flex; flex-direction: column; }
+  .form.fill-screen label.grow textarea { flex: 1 1 auto; }
+}
+.field { display: flex; flex-direction: column; gap: 0.25rem; min-width: 0; }
+.field > label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--md-on-surface-variant);
+}
+.input-with-action { display: flex; gap: 0.5rem; align-items: stretch; }
+.input-with-action input { flex: 1; min-width: 0; }
+.tonal-button {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+  padding: 0 0.875rem;
+  border-radius: var(--md-shape-md);
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+.tonal-button:hover { background: color-mix(in srgb, var(--md-on-secondary-container) 10%, var(--md-secondary-container)); }
+@media (max-width: 1180px) and (min-width: 1024px) { .hide-narrow { display: none; } }
+
+.qr-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.75rem;
+  border-radius: var(--md-shape-md);
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+}
+.qr-card-icon { color: var(--c-blue); }
+.qr-card-body { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.qr-card-body .small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit; opacity: 0.8; }
+
+/* ---------- QR scanner dialog ---------- */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.45);
+}
+.dialog {
+  width: min(520px, 100%);
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
+  margin: 0;
+  box-shadow: var(--md-elevation-2);
+  border-radius: 28px;
+  padding: 1.5rem;
+  background: var(--md-surface-container-high);
+}
+.dialog-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+.dialog-head h2 { margin: 0; }
+.dialog-head p { margin: 0; }
+.dialog-head .icon-button { margin-left: auto; }
+.dialog-head .result-icon { background: var(--md-primary-container); color: var(--md-primary); }
+.segmented { display: flex; border: 1px solid var(--md-outline); border-radius: var(--md-shape-full); overflow: hidden; margin-bottom: 1rem; }
+.segment { flex: 1; border-radius: 0; background: transparent; color: var(--md-on-surface); gap: 0.35rem; padding: 0 0.5rem; font-size: 0.8125rem; }
+.segment + .segment { border-left: 1px solid var(--md-outline); }
+.segment .material-symbols-outlined { font-size: 18px; }
+.segment.active { background: var(--md-secondary-container); color: var(--md-on-secondary-container); }
+.dialog-body { display: grid; gap: 0.75rem; }
+.drop {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.5rem;
+  min-height: 160px;
+  border: 2px dashed var(--md-outline-variant);
+  border-radius: var(--md-shape-lg);
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+.drop:hover { border-color: var(--c-blue); }
+.drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; min-height: 0; }
+.drop-icon { font-size: 36px; color: var(--c-blue); }
+.camera { position: relative; display: grid; gap: 0.5rem; justify-items: center; }
+.camera video { width: 100%; max-height: 50dvh; border-radius: var(--md-shape-lg); background: #000; object-fit: cover; }
+.camera-frame {
+  position: absolute;
+  top: 12%;
+  width: 55%;
+  aspect-ratio: 1;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+.samples { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+.sample {
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  flex-direction: column;
+  padding: 0.75rem;
+  gap: 0.5rem;
+  border-radius: var(--md-shape-lg);
+  background: var(--md-surface-container-lowest);
+  border: 1px solid var(--md-outline-variant);
+  color: var(--md-on-surface);
+  font-size: 0.8125rem;
+}
+.sample:hover { border-color: var(--c-blue); }
+.sample img { width: 100%; max-width: 120px; aspect-ratio: 1; object-fit: cover; object-position: top; border-radius: 8px; background: #fff; }
+
+/* ---------- responsive guards ---------- */
+/* Grid children may shrink below their content's width (long IDs ellipsize, tabs scroll). */
+.two-col > *, .analyst-layout > *, .detail-grid > *, .kpis > * { min-width: 0; }
+/* Tablets and below: the analyst console stacks (queue above the case). */
+@media (max-width: 960px) {
+  .analyst-layout { grid-template-columns: 1fr; }
+  .case-list ul { max-height: 360px; overflow-y: auto; }
+}
+@media (max-width: 480px) {
+  .risk-legend { grid-template-columns: repeat(2, 1fr); row-gap: 0.25rem; }
+  .risk-legend span:nth-child(n) { text-align: left; }
+  .risk-legend span:nth-child(even) { text-align: right; }
+  .content { padding-left: 0.75rem; padding-right: 0.75rem; }
+}
+
+/* Tablets: form and result stack instead of squeezing two columns. */
+@media (max-width: 1023px) {
+  .two-col { grid-template-columns: 1fr; }
+}
+/* Long unbroken text (UPI IDs, web addresses, case IDs) wraps instead of widening the page. */
+.sheet-message, .signals span, .verdict p, .case-detail p, .case-title h2, .qr-card-body strong {
+  overflow-wrap: anywhere;
+}
+
+.field-label-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; min-height: 18px; }
+.field-label-row > label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--md-on-surface-variant);
+}
+.scan-chip {
+  min-height: 24px;
+  height: 24px;
+  padding: 0 0.5rem 0 0.35rem;
+  gap: 0.2rem;
+  border-radius: var(--md-shape-sm);
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+  font-size: 0.75rem;
+}
+.scan-chip .material-symbols-outlined { font-size: 16px; }
+.scan-chip:hover { background: color-mix(in srgb, var(--md-on-secondary-container) 10%, var(--md-secondary-container)); }

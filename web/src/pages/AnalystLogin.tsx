@@ -4,6 +4,9 @@ import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ErrorNotice, Icon } from "../components/ui";
 import { useSession } from "../session";
 
+/** Demo analyst IDs for the team (docs/demo/DEMO_GUIDE.md). Suggestions only; any valid ID works. */
+const TEAM_ANALYSTS = ["analyst_jahnavi", "analyst_hitesh", "analyst_ronak", "analyst_sameer"];
+
 const ERRORS = {
   bad_id: "Enter your analyst ID (letters, numbers, dots, dashes or underscores).",
   bad_code: "That access code isn't right. Check the code shared with your team.",
@@ -43,6 +46,7 @@ export function AnalystLogin() {
           Analyst ID
           <input
             value={id}
+            list="team-analysts"
             autoComplete="username"
             onChange={(e) => {
               setId(e.target.value);
@@ -50,6 +54,11 @@ export function AnalystLogin() {
             }}
           />
         </label>
+        <datalist id="team-analysts">
+          {TEAM_ANALYSTS.map((a) => (
+            <option key={a} value={a} />
+          ))}
+        </datalist>
         <label>
           Access code
           <input

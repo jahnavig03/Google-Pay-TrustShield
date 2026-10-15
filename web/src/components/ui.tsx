@@ -49,7 +49,10 @@ export const DECISION_TONE: Record<string, string> = {
 };
 
 export function humanize(code: string): string {
-  return code.replace(/_/g, " ").replace(/\b\w/, (c) => c.toUpperCase());
+  return code
+    .replace(/_/g, " ")
+    .replace(/\b\w/, (c) => c.toUpperCase())
+    .replace(/\b(qr|upi|kyc|vpa)\b/gi, (w) => w.toUpperCase());
 }
 
 /** "5 min ago" style relative time for queue rows. */

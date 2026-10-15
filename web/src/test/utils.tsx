@@ -18,7 +18,11 @@ type Handler = (call: Call) => { status?: number; body: unknown };
 export function mockGateway(routes: Record<string, Handler>) {
   const calls: Call[] = [];
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    const request = input instanceof Request ? input : new Request(input, init);
+    // Relative URLs (e.g. /demo-qr/*.png) resolve against the page origin, as in a browser.
+    const request =
+      input instanceof Request
+        ? input
+        : new Request(new URL(String(input), "http://localhost"), init);
     const url = new URL(request.url);
     const text = await request.clone().text();
     const call: Call = {
