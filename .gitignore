@@ -19,6 +19,7 @@ env/
 # --- Node / web ---
 node_modules/
 web/dist/
+*.tsbuildinfo
 .vite/
 npm-debug.log*
 yarn-error.log*
@@ -52,6 +53,9 @@ data/out/
 
 # --- ADK local session state ---
 .adk/
+
+# --- Local Claude Code / editor launch config ---
+.claude/
 
 # --- OS / editors ---
 .DS_Store
