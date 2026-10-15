@@ -556,8 +556,8 @@ blockquote {
   border-radius: 32px;
   display: grid;
   place-items: center;
-  background: var(--md-surface-container-high);
-  color: var(--c-mono); /* single-colour asset: black or white */
+  background: var(--md-primary-container);
+  color: var(--md-primary);
   margin-bottom: 0.5rem;
 }
 .landing-title { font-size: 2.8125rem; line-height: 3.25rem; font-weight: 400; margin: 0; } /* display-small */
@@ -768,3 +768,21 @@ blockquote {
 .theme-toggle .material-symbols-outlined { transition: transform 0.3s ease; }
 .theme-toggle:active .material-symbols-outlined { transform: rotate(30deg); }
 .topbar-actions { margin-left: auto; }
+
+/* ---------- dense payment form: fits a laptop screen without scrolling ---------- */
+.page-header.compact { margin-bottom: 0.75rem; }
+.page-header.compact h1 { margin-bottom: 0; }
+.page-header.compact p { margin: 0; font-size: 0.875rem; }
+@media (min-width: 721px) {
+  .two-col:has(.form.dense) { grid-template-columns: minmax(320px, 500px) 1fr; }
+}
+.form.dense { gap: 0.75rem; padding: 1rem 1.25rem; }
+.form.dense input:not([type="checkbox"]):not([type="file"]) { min-height: 44px; }
+.form.dense textarea { padding: 0.6rem 1rem; }
+.form.dense label { gap: 0.25rem; }
+.preset-row { border: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.preset-row legend { float: left; font-size: 0.75rem; font-weight: 500; color: var(--md-on-surface-variant); margin-right: 0.25rem; padding: 0; }
+.field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+.checks.inline { flex-direction: row; gap: 1.5rem; }
+.checks.inline label.check { min-height: 28px; }
+@media (max-width: 480px) { .field-grid { grid-template-columns: 1fr; } }

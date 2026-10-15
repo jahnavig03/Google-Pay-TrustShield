@@ -24,8 +24,8 @@ const MINUTES_PER_YEAR = 60 * 24 * 365;
 const PRESETS: { id: string; label: string; hint: string; form: FormState }[] = [
   {
     id: "demo1",
-    label: "Demo 1: ₹85,000 'account blocked'",
-    hint: "Scam SMS, new payee, new device",
+    label: "Demo 1 · ₹85k scam",
+    hint: "₹85,000 'account blocked' scam: scam SMS, new payee, new device",
     form: {
       ...EMPTY,
       amount: demo1.request.amount,
@@ -39,8 +39,8 @@ const PRESETS: { id: string; label: string; hint: string; form: FormState }[] = 
   },
   {
     id: "rent",
-    label: "Rent ₹25,000 to landlord",
-    hint: "Large but genuine",
+    label: "Rent ₹25k",
+    hint: "₹25,000 rent to a long-standing landlord: large but genuine",
     form: {
       ...EMPTY,
       amount: 25000,
@@ -52,8 +52,8 @@ const PRESETS: { id: string; label: string; hint: string; form: FormState }[] = 
   },
   {
     id: "chai",
-    label: "Everyday ₹40 at a tea stall",
-    hint: "Normal payment",
+    label: "Everyday ₹40",
+    hint: "₹40 at a tea stall: a normal payment",
     form: {
       ...EMPTY,
       amount: 40,
@@ -109,7 +109,7 @@ export function PayPage() {
 
   return (
     <section className="page">
-      <header className="page-header">
+      <header className="page-header compact">
         <h1>Payment simulator</h1>
         <p className="muted">
           Try a UPI payment. TrustShield checks it before it goes through and explains why.
@@ -117,71 +117,73 @@ export function PayPage() {
       </header>
 
       <div className="two-col">
-        <form className="card form" onSubmit={submit} aria-label="Payment details">
-          <fieldset className="presets">
-            <legend>Start from an example</legend>
+        <form className="card form dense" onSubmit={submit} aria-label="Payment details">
+          <fieldset className="preset-row">
+            <legend>Try an example</legend>
             {PRESETS.map((preset) => (
               <button
                 key={preset.id}
                 type="button"
-                className="preset"
+                className="chip"
+                title={preset.hint}
                 onClick={() => {
                   setForm(preset.form);
                   evaluate.reset();
                 }}
               >
-                <strong>{preset.label}</strong>
-                <span>{preset.hint}</span>
+                {preset.label}
               </button>
             ))}
           </fieldset>
 
-          <label>
-            Amount (₹)
-            <input
-              type="number"
-              min={1}
-              step="any"
-              required
-              value={form.amount || ""}
-              onChange={(e) => update("amount", Number(e.target.value))}
-            />
-          </label>
-          <label>
-            Pay to (UPI ID)
-            <input
-              required
-              value={form.payee_vpa}
-              placeholder="name@synthbank"
-              onChange={(e) => update("payee_vpa", e.target.value.trim())}
-            />
-          </label>
-          <label>
-            Payer (demo account)
-            <input
-              required
-              value={form.payer_id}
-              onChange={(e) => update("payer_id", e.target.value.trim())}
-            />
-          </label>
-          <label>
-            Recipient added (minutes ago)
-            <input
-              type="number"
-              min={0}
-              required
-              value={form.beneficiary_age_minutes}
-              onChange={(e) => update("beneficiary_age_minutes", Number(e.target.value))}
-            />
-          </label>
-          <div className="checks">
+          <div className="field-grid">
+            <label>
+              Amount (₹)
+              <input
+                type="number"
+                min={1}
+                step="any"
+                required
+                value={form.amount || ""}
+                onChange={(e) => update("amount", Number(e.target.value))}
+              />
+            </label>
+            <label>
+              Recipient added (min ago)
+              <input
+                type="number"
+                min={0}
+                required
+                value={form.beneficiary_age_minutes}
+                onChange={(e) => update("beneficiary_age_minutes", Number(e.target.value))}
+              />
+            </label>
+            <label>
+              Pay to (UPI ID)
+              <input
+                required
+                value={form.payee_vpa}
+                placeholder="name@synthbank"
+                onChange={(e) => update("payee_vpa", e.target.value.trim())}
+              />
+            </label>
+            <label>
+              Payer (demo account)
+              <input
+                required
+                value={form.payer_id}
+                onChange={(e) => update("payer_id", e.target.value.trim())}
+              />
+            </label>
+          </div>
+          <div className="checks inline">
             <label className="check">
               <input
                 type="checkbox"
                 checked={form.device_changed ?? false}
                 onChange={(e) => update("device_changed", e.target.checked)}
               />
-              Paying from a new device
+              New device
             </label>
             <label className="check">
               <input
@@ -189,13 +191,13 @@ export function PayPage() {
                 checked={form.location_changed ?? false}
                 onChange={(e) => update("location_changed", e.target.checked)}
               />
-              Paying from a new location
+              New location
             </label>
           </div>
           <label>
             Message that asked you to pay (optional)
             <textarea
-              rows={4}
+              rows={2}
               value={form.message_context ?? ""}
               placeholder="Paste the SMS, chat or call notes here"
               onChange={(e) => update("message_context", e.target.value)}
