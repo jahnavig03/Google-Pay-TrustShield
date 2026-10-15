@@ -4,6 +4,15 @@ import type { Role } from "../api/client";
 import { useRole } from "../role";
 
 /** Shown when the selected demo role can't use this page (the gateway would answer 403). */
+/** Material Symbols icon (decorative: hidden from screen readers). */
+export function Icon({ name, className = "" }: { name: string; className?: string }) {
+  return (
+    <span className={`material-symbols-outlined ${className}`.trim()} aria-hidden="true">
+      {name}
+    </span>
+  );
+}
+
 export function RoleNotice({ needs }: { needs: Role }) {
   const { role, setRole } = useRole();
   if (role === needs) return null;

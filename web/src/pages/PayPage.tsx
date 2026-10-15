@@ -3,8 +3,8 @@ import { useState, type FormEvent } from "react";
 
 import demo1 from "../../../shared/contracts/fixtures/demo1_payment_85k.json";
 import { describeError, type PaymentRiskRequest, type PaymentRiskResponse } from "../api/client";
-import { ErrorNotice, RoleNotice, Spinner } from "../components/ui";
-import { useRole } from "../role";
+import { DECISION_TONE, ErrorNotice, Icon, RoleNotice, Spinner } from "../components/ui";
+import { usePageRole, useRole } from "../role";
 
 type FormState = Omit<PaymentRiskRequest, "transaction_id" | "currency" | "attachment_uri">;
 
@@ -64,6 +64,13 @@ const PRESETS: { id: string; label: string; hint: string; form: FormState }[] = 
   },
 ];
 
+const DECISION_ICON: Record<string, string> = {
+  ALLOW: "check_circle",
+  WARN: "info",
+  STEP_UP_VERIFICATION: "warning",
+  HOLD_AND_ESCALATE: "pan_tool",
+};
+
 const HEADLINE: Record<string, string> = {
   ALLOW: "This payment looks fine",
   WARN: "Take a moment before you pay",
@@ -76,6 +83,7 @@ function newTransactionId(): string {
 }
 
 export function PayPage() {
+  usePageRole("customer");
   const { api } = useRole();
   const [form, setForm] = useState<FormState>(PRESETS[0].form);
   const [chosenAction, setChosenAction] = useState<string | null>(null);
@@ -234,10 +242,13 @@ function ResultSheet({
   const allowed = result.decision === "ALLOW";
   return (
     <article
-      className={`card sheet sheet-${result.decision.toLowerCase()}`}
+      className={`card sheet tone-${DECISION_TONE[result.decision] ?? "neutral"}`}
       aria-label="Payment check result"
     >
-      <h2>{HEADLINE[result.decision] ?? result.decision}</h2>
+      <div className="result-head">
+        <Icon name={DECISION_ICON[result.decision] ?? "info"} className="result-icon" />
+        <h2>{HEADLINE[result.decision] ?? result.decision}</h2>
+      </div>
       <p className="sheet-message">{result.customer_message}</p>
 
       {!allowed && (result.top_signals?.length ?? 0) > 0 && (

@@ -19,7 +19,7 @@ import {
   formatRupees,
   humanize,
 } from "../components/ui";
-import { useRole } from "../role";
+import { usePageRole, useRole } from "../role";
 
 const NOT_COVERED = "not covered by policy";
 const LIST_REFRESH_MS = 10_000;
@@ -32,6 +32,7 @@ const ACTIONS: { action: AnalystAction; label: string; tone: string }[] = [
 
 export function AnalystPage() {
   const { caseId } = useParams();
+  usePageRole("analyst");
   return (
     <section className="page">
       <header className="page-header">

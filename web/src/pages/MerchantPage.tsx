@@ -7,18 +7,26 @@ import {
   type MerchantVerifyRequest,
   type MerchantVerifyResponse,
 } from "../api/client";
-import { Badge, ErrorNotice, RoleNotice, Spinner, formatDateTime, formatRupees } from "../components/ui";
-import { useRole } from "../role";
+import {
+  Badge,
+  ErrorNotice,
+  Icon,
+  RoleNotice,
+  Spinner,
+  formatDateTime,
+  formatRupees,
+} from "../components/ui";
+import { usePageRole, useRole } from "../role";
 
 /** Matches the server-side cap on inline screenshots. */
 export const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
 
-const STATUS: Record<string, { label: string; tone: string }> = {
-  verified: { label: "Verified", tone: "ok" },
-  pending: { label: "Pending", tone: "caution" },
-  inconsistent: { label: "Inconsistent", tone: "warning" },
-  not_found_in_ledger: { label: "Not found in ledger", tone: "warning" },
-  suspicious: { label: "Suspicious", tone: "danger" },
+const STATUS: Record<string, { label: string; tone: string; icon: string }> = {
+  verified: { label: "Verified", tone: "ok", icon: "verified" },
+  pending: { label: "Pending", tone: "caution", icon: "schedule" },
+  inconsistent: { label: "Inconsistent", tone: "warning", icon: "error" },
+  not_found_in_ledger: { label: "Not found in ledger", tone: "warning", icon: "search_off" },
+  suspicious: { label: "Suspicious", tone: "danger", icon: "gpp_bad" },
 };
 
 const EMPTY: MerchantVerifyRequest = {
@@ -38,6 +46,7 @@ function readAsDataUri(file: File): Promise<string> {
 }
 
 export function MerchantPage() {
+  usePageRole("merchant");
   const { api } = useRole();
   const [form, setForm] = useState<MerchantVerifyRequest>(EMPTY);
   const [fileError, setFileError] = useState<string | null>(null);
@@ -153,14 +162,18 @@ export function MerchantPage() {
 }
 
 function Verdict({ result }: { result: MerchantVerifyResponse }) {
-  const status = STATUS[result.payment_status] ?? { label: result.payment_status, tone: "neutral" };
+  const status = STATUS[result.payment_status] ?? {
+    label: result.payment_status,
+    tone: "neutral",
+    icon: "info",
+  };
   const x = result.extracted;
   return (
-    <article className={`card verdict verdict-${status.tone}`} aria-label="Verification result">
-      <div className="case-title">
+    <article className={`card verdict tone-${status.tone}`} aria-label="Verification result">
+      <div className="result-head">
+        <Icon name={status.icon} className="result-icon" />
         <h2>{status.label}</h2>
-        <Badge tone={status.tone}>{status.label}</Badge>
-        <Badge tone="neutral">Risk: {result.risk_level}</Badge>
+        <Badge tone={status.tone}>Risk: {result.risk_level}</Badge>
       </div>
       <p className="verdict-action">{result.recommended_action}</p>
       <p>{result.explanation}</p>

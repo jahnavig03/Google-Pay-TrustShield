@@ -21,17 +21,24 @@ describe("app shell", () => {
     expect(screen.getByLabelText("Demo role")).toHaveValue("analyst");
   });
 
-  it("warns when the selected role can't use the page", () => {
-    mockGateway({});
-    renderApp("/merchant", "customer");
-    expect(screen.getByRole("status")).toHaveTextContent("This page is for the merchant role");
+  it("opening a page directly adopts that page's role", async () => {
+    const { calls } = mockGateway({ "GET /api/v1/cases": () => ({ body: { cases: [] } }) });
+    renderApp("/analyst", "merchant");
+    expect(await screen.findByText(/No cases yet/)).toBeVisible();
+    expect(calls.every((c) => c.role === "analyst")).toBe(true);
   });
 
-  it("the analyst page never calls the gateway with a non-analyst role", async () => {
+  it("switching to the wrong role warns and stops the analyst page calling the gateway", async () => {
     const { calls } = mockGateway({ "GET /api/v1/cases": () => ({ body: { cases: [] } }) });
-    renderApp("/analyst/CASE-1", "customer");
+    renderApp("/analyst", "analyst");
+    await screen.findByText(/No cases yet/);
+    const before = calls.length;
+
+    await userEvent.selectOptions(screen.getByLabelText("Demo role"), "customer");
     expect(screen.getByRole("status")).toHaveTextContent("This page is for the analyst role");
+    await userEvent.click(screen.getByRole("button", { name: "Switch to analyst" }));
+    await userEvent.selectOptions(screen.getByLabelText("Demo role"), "merchant");
     await userEvent.click(screen.getByRole("link", { name: "Merchant check" }));
-    expect(calls).toHaveLength(0);
+    expect(calls.slice(before).filter((c) => c.role !== "analyst")).toHaveLength(0);
   });
 });

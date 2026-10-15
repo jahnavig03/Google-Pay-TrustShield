@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 import { makeApi, type Api, type Role } from "./api/client";
 
@@ -46,4 +54,16 @@ export function useRole(): RoleContextValue {
   const value = useContext(RoleContext);
   if (!value) throw new Error("useRole must be used inside <RoleProvider>");
   return value;
+}
+
+/**
+ * Each page adopts its own demo role when it opens (also on a direct URL or a reload), so a
+ * stale role from another page can't make the first request fail. The role switcher can still
+ * change it afterwards, e.g. to show the gateway's 403.
+ */
+export function usePageRole(pageRole: Role): void {
+  const { setRole } = useRole();
+  useEffect(() => {
+    setRole(pageRole);
+  }, [pageRole, setRole]);
 }
