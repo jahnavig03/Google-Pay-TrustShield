@@ -10,6 +10,7 @@ import { MerchantPage } from "./pages/MerchantPage";
 import { PayPage } from "./pages/PayPage";
 import { RoleProvider } from "./role";
 import { SessionProvider } from "./session";
+import { ThemeProvider } from "./theme";
 
 export function AppRoutes() {
   return (
@@ -58,11 +59,13 @@ export function makeQueryClient() {
 export function App({ queryClient = makeQueryClient() }: { queryClient?: QueryClient }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionProvider>
-        <RoleProvider>
-          <AppRoutes />
-        </RoleProvider>
-      </SessionProvider>
+      <ThemeProvider>
+        <SessionProvider>
+          <RoleProvider>
+            <AppRoutes />
+          </RoleProvider>
+        </SessionProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

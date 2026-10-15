@@ -1,9 +1,16 @@
 # web/: TrustShield simulator (React + Vite + TypeScript)
 
-**Owner: Sameer** (initial build by Jahnavi, 15 Oct). One app with three routes, typed against
-`shared/contracts/openapi.json`. Every page shows the banner *"Prototype simulator — synthetic data.
-Not affiliated with Google Pay."* The look is our own neutral design, with no Google Pay logo,
-colours or layout.
+**Owner: Sameer** (initial build by Jahnavi). One app, typed against `shared/contracts/openapi.json`.
+Every page shows the pinned banner *"Built exclusively for the Google Cloud AI Builder Cup ·
+Prototype simulator — synthetic data · Not affiliated with Google Pay"*.
+
+**Theme.** Material Design 3 structure with the palette Blue #3A81F1, Green #2DA94F,
+Amber #FDBD00, Red #EA4335 and Flint #5F6368. These are used as accents by meaning (trust, safe,
+caution, hold, neutral); text-bearing fills use a deeper tone of the same blue for AA contrast.
+A light/dark toggle sits top right on every page. The choice is saved in `localStorage` and
+applied before first paint (no flash), with a 0.3 s cross-fade. Dark mode uses a pure black
+background, dark-grey surfaces and desaturated accents; the logo is single-colour (black or
+white). No Google or Google Pay logos, no multi-colour brand mark, no copied screens.
 
 | Route | Who | What |
 | --- | --- | --- |

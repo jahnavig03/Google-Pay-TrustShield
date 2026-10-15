@@ -2,10 +2,12 @@ import type { ReactNode } from "react";
 import { Link, NavLink, Outlet } from "react-router-dom";
 
 import { useSession } from "../session";
+import { ThemeToggle } from "../theme";
 import { ShieldMark } from "./Brand";
 import { Icon } from "./ui";
 
-export const DISCLAIMER = "Prototype simulator — synthetic data. Not affiliated with Google Pay.";
+export const DISCLAIMER =
+  "Built exclusively for the Google Cloud AI Builder Cup · Prototype simulator — synthetic data · Not affiliated with Google Pay";
 
 interface NavItem {
   to: string;
@@ -47,7 +49,10 @@ function Shell({ nav = [], actions }: { nav?: NavItem[]; actions?: ReactNode }) 
               ))}
             </nav>
           )}
-          {actions && <div className="topbar-actions">{actions}</div>}
+          <div className="topbar-actions">
+            {actions}
+            <ThemeToggle />
+          </div>
         </header>
       </div>
       <main className="content">

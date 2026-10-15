@@ -36,6 +36,13 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "resolved", label: "Resolved" },
 ];
 
+function bandFor(score: number): "allow" | "warn" | "stepup" | "hold" {
+  if (score >= RISK_BANDS.hold) return "hold";
+  if (score >= RISK_BANDS.stepUp) return "stepup";
+  if (score >= RISK_BANDS.warn) return "warn";
+  return "allow";
+}
+
 function bucket(status: string): Exclude<Filter, "all"> {
   if (status === "escalated") return "escalated";
   if (status === "closed" || status === "customer_outreach") return "resolved";
@@ -208,7 +215,7 @@ function CaseQueue(props: {
                 <Badge tone={DECISION_TONE[c.decision] ?? "neutral"}>{humanize(c.decision)}</Badge>
               </span>
               <span className="muted small ellipsis">{c.payee_vpa}</span>
-              <span className="mini-meter" aria-hidden="true">
+              <span className={`mini-meter band-${bandFor(c.risk_score)}`} aria-hidden="true">
                 <span style={{ width: `${Math.round(c.risk_score * 100)}%` }} />
               </span>
               <span className="muted small case-row-meta">
