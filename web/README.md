@@ -1,8 +1,7 @@
 # web/: TrustShield simulator (React + Vite + TypeScript)
 
 **Owner: Sameer** (initial build by Jahnavi). One app, typed against `shared/contracts/openapi.json`.
-Every page shows the pinned banner *"Built exclusively for the Google Cloud AI Builder Cup ·
-Prototype simulator — synthetic data · Not affiliated with Google Pay"*.
+Every page shows the pinned banner *"Built exclusively for the Google Cloud AI Builder Cup"*.
 
 **Theme.** Material Design 3 structure with the palette Blue #3A81F1, Green #2DA94F,
 Amber #FDBD00, Red #EA4335 and Flint #5F6368. These are used as accents by meaning (trust, safe,

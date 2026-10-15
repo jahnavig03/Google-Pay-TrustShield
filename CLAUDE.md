@@ -65,7 +65,7 @@ Any R ≥ 0.70 opens a case (`analyst_case_required = true`).
 - Use synthetic data only. Never use real Google Pay data, identities or credentials.
 - Customer-facing text must be non-accusatory and must give a safe next action.
 - Every policy claim must cite a retrieved source. If nothing is retrieved, answer "not covered by policy".
-- The UI must be labelled "Prototype simulator — synthetic data". It must not use Google Pay logos or look like the real app.
+- Every page shows the pinned banner "Built exclusively for the Google Cloud AI Builder Cup". The UI must not use Google or Google Pay logos or look like the real Google Pay app.
 - Git: never add `Co-Authored-By` trailers, "Generated with Claude Code" lines or any other AI attribution to commit messages or PR descriptions. Commits are authored by the team member only.
 
 ## Commands (keep this section updated)

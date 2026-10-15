@@ -6,8 +6,7 @@ import { ThemeToggle } from "../theme";
 import { ShieldMark } from "./Brand";
 import { Icon } from "./ui";
 
-export const DISCLAIMER =
-  "Built exclusively for the Google Cloud AI Builder Cup · Prototype simulator — synthetic data · Not affiliated with Google Pay";
+export const DISCLAIMER = "Built exclusively for the Google Cloud AI Builder Cup";
 
 interface NavItem {
   to: string;
