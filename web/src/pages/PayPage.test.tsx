@@ -10,7 +10,7 @@ const EVALUATE = "POST /api/v1/payment-risk/evaluate";
 describe("/pay", () => {
   it("demo 1: sends the fixture payment as customer and shows the hold sheet", async () => {
     const { calls } = mockGateway({ [EVALUATE]: () => ({ body: demo1.expected_response }) });
-    renderApp("/pay", "customer");
+    renderApp("/customer/pay");
 
     await userEvent.click(screen.getByRole("button", { name: "Pay" }));
 
@@ -36,7 +36,7 @@ describe("/pay", () => {
 
   it("a safe action is simulated, never executed", async () => {
     mockGateway({ [EVALUATE]: () => ({ body: demo1.expected_response }) });
-    renderApp("/pay", "customer");
+    renderApp("/customer/pay");
     await userEvent.click(screen.getByRole("button", { name: "Pay" }));
     await userEvent.click(await screen.findByRole("button", { name: "Cancel this payment" }));
     expect(screen.getByText(/No real payment was made/)).toBeVisible();
@@ -55,7 +55,7 @@ describe("/pay", () => {
         },
       }),
     });
-    renderApp("/pay", "customer");
+    renderApp("/customer/pay");
     await userEvent.click(screen.getByRole("button", { name: /Everyday ₹40/ }));
     await userEvent.click(screen.getByRole("button", { name: "Pay" }));
     const sheet = await screen.findByRole("article", { name: "Payment check result" });
@@ -70,7 +70,7 @@ describe("/pay", () => {
         body: { detail: { governance_outcome: "blocked", reason: "Governance rule 3: …" } },
       }),
     });
-    renderApp("/pay", "customer");
+    renderApp("/customer/pay");
     await userEvent.click(screen.getByRole("button", { name: "Pay" }));
     const alert = await screen.findByRole("alert");
     expect(alert).toHaveTextContent("We couldn't complete this safety check");

@@ -1,0 +1,11 @@
+{
+  "_comment": "Registered (KYC) display names for the demo UPI IDs. SYNTHETIC. Used to check the payee name printed in a scanned QR code.",
+  "registered_names": {
+    "chai.ramesh@synthbank": "Ramesh Tea Stall",
+    "mer.demo0042@synthbank": "Demo Kirana Store",
+    "landlord.sharma@synthbank": "Anil Sharma",
+    "kyc.helpdesk.verify@synthbank": "Vikram Rao",
+    "refund.desk.help@synthbank": "Sunil Yadav",
+    "prize.release.desk@synthbank": "Karan Mehta"
+  }
+}

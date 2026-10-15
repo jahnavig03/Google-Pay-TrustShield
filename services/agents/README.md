@@ -87,8 +87,9 @@ Findings from live calls on project `qualified-sun-511214-t1` (13 Oct 2026):
 ## PayGuard merchant check (`merchant/`, owner: Ronak)
 
 ```python
-from trustshield_agents import verify_merchant_payment   # async; the gateway picks it up
-resp = await verify_merchant_payment(MerchantVerifyRequest(...))   # audit_id left empty
+from trustshield_agents import verify_merchant_payment  # async; the gateway picks it up
+
+resp = await verify_merchant_payment(MerchantVerifyRequest(...))  # audit_id left empty
 ```
 
 | Port | mock | gcp |

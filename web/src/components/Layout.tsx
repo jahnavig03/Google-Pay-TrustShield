@@ -1,74 +1,104 @@
-import { NavLink, Outlet } from "react-router-dom";
+import type { ReactNode } from "react";
+import { Link, NavLink, Outlet } from "react-router-dom";
 
-import { ROLES, type Role } from "../api/client";
-import { useRole } from "../role";
+import { useSession } from "../session";
+import { ThemeToggle } from "../theme";
+import { ShieldMark } from "./Brand";
 import { Icon } from "./ui";
 
-export const DISCLAIMER = "Prototype simulator — synthetic data. Not affiliated with Google Pay.";
+export const DISCLAIMER = "Built exclusively for the Google Cloud AI Builder Cup";
 
-const NAV: { to: string; label: string; icon: string; role: Role }[] = [
-  { to: "/pay", label: "Payment simulator", icon: "payments", role: "customer" },
-  { to: "/analyst", label: "Analyst console", icon: "policy", role: "analyst" },
-  { to: "/merchant", label: "Merchant check", icon: "storefront", role: "merchant" },
-];
-
-function ShieldIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
-      <path
-        d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="currentColor" strokeWidth="1.8" />
-    </svg>
-  );
+interface NavItem {
+  to: string;
+  label: string;
+  icon: string;
 }
 
-export function Layout() {
-  const { role, setRole } = useRole();
+const CUSTOMER_NAV: NavItem[] = [
+  { to: "/customer/pay", label: "Payment simulator", icon: "payments" },
+  { to: "/customer/merchant", label: "Merchant check", icon: "storefront" },
+];
+
+const ANALYST_NAV: NavItem[] = [{ to: "/analyst", label: "Analyst console", icon: "policy" }];
+
+/** Disclaimer + app bar (pinned together, so the disclaimer is always on screen) + page. */
+function Shell({ nav = [], actions }: { nav?: NavItem[]; actions?: ReactNode }) {
   return (
     <div className="app">
-      {/* Disclaimer + app bar are pinned together so the disclaimer is always on screen. */}
       <div className="app-header">
         <div className="disclaimer" role="note">
           {DISCLAIMER}
         </div>
         <header className="topbar">
-          <div className="brand">
-            <ShieldIcon />
+          <Link to="/" className="brand" aria-label="TrustShield home">
+            <span className="brand-tile">
+              <ShieldMark size={20} />
+            </span>
             <span>TrustShield</span>
-          </div>
-          <nav className="nav" aria-label="Main">
-            {NAV.map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={() => setRole(item.role)}
-                className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
-              >
-                <Icon name={item.icon} />
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-          <label className="role-switcher">
-            <span>Demo role</span>
-            <select value={role} onChange={(e) => setRole(e.target.value as Role)}>
-              {ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
+          </Link>
+          {nav.length > 0 && (
+            <nav className={nav.length === 1 ? "nav nav-single" : "nav"} aria-label="Main">
+              {nav.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+                >
+                  <Icon name={item.icon} />
+                  {item.label}
+                </NavLink>
               ))}
-            </select>
-          </label>
+            </nav>
+          )}
+          <div className="topbar-actions">
+            {actions}
+            <ThemeToggle />
+          </div>
         </header>
       </div>
       <main className="content">
         <Outlet />
       </main>
     </div>
+  );
+}
+
+/** Landing, the customer's choice screen and the analyst sign-in. */
+export function BareLayout() {
+  return <Shell />;
+}
+
+export function CustomerLayout() {
+  return (
+    <Shell
+      nav={CUSTOMER_NAV}
+      actions={
+        <Link to="/" className="text-button">
+          <Icon name="logout" />
+          Exit
+        </Link>
+      }
+    />
+  );
+}
+
+export function AnalystLayout() {
+  const { analystId } = useSession();
+  return (
+    <Shell
+      nav={ANALYST_NAV}
+      actions={
+        <>
+          <span className="user-chip" title="Signed-in analyst">
+            <Icon name="badge" />
+            {analystId}
+          </span>
+          <Link to="/signout" replace className="text-button">
+            <Icon name="logout" />
+            Sign out
+          </Link>
+        </>
+      }
+    />
   );
 }

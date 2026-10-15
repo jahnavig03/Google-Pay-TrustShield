@@ -3,6 +3,7 @@
 from .evidence import EvidenceProvider
 from .feature_store import FeatureStore, PayeeFeatures, PayerFeatures
 from .message_writer import CustomerMessageWriter, MessageInputs
+from .payee_directory import PayeeDirectory
 from .scam_classifier import ScamAssessment, ScamClassifier, ScamPattern
 
 __all__ = [
@@ -10,6 +11,7 @@ __all__ = [
     "EvidenceProvider",
     "FeatureStore",
     "MessageInputs",
+    "PayeeDirectory",
     "PayeeFeatures",
     "PayerFeatures",
     "ScamAssessment",

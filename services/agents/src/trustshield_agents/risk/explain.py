@@ -59,6 +59,23 @@ _SCAM_TEXT: dict[str, tuple[str, str]] = {
 }
 
 
+# QR findings, most specific first (the first cue present wins).
+_QR_TEXT: dict[str, tuple[str, str]] = {
+    "qr_not_upi_payment": (
+        "Not a payment QR",
+        "This QR code doesn't contain a UPI payment; it opens something else.",
+    ),
+    "qr_name_mismatch": (
+        "QR name doesn't match",
+        "The name in this QR code doesn't match the registered owner of its UPI ID.",
+    ),
+    "qr_merchant_unverified": (
+        "Unverified shop QR",
+        "This QR looks like a shop's, but its UPI ID isn't a registered merchant.",
+    ),
+}
+
+
 def _human_age(minutes: int) -> str:
     if minutes < 60:
         n, unit = max(minutes, 1), "minute"
@@ -131,6 +148,8 @@ def explain(key: str, x: float, fired: bool, inputs: RiskInputs, median: float) 
 
     if key == "S":
         if not fired:
+            if inputs.has_qr:
+                return "QR code checked", "The name in this QR code matches its UPI ID's owner."
             if inputs.has_message:
                 return (
                     "Message checked",
@@ -138,6 +157,9 @@ def explain(key: str, x: float, fired: bool, inputs: RiskInputs, median: float) 
                 )
             return "No message shared", "No message or screenshot was shared with this payment."
         label, text = _SCAM_TEXT.get(inputs.scam_pattern, _SCAM_TEXT["none"])
+        for cue, (qr_label, qr_text) in _QR_TEXT.items():
+            if cue in inputs.scam_cues:
+                return qr_label, qr_text
         if "account_block" in inputs.scam_cues:
             text = (
                 "The message linked to this payment says your account will be blocked "

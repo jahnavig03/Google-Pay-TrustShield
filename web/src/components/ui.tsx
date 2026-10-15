@@ -1,28 +1,11 @@
 import type { ReactNode } from "react";
 
-import type { Role } from "../api/client";
-import { useRole } from "../role";
-
-/** Shown when the selected demo role can't use this page (the gateway would answer 403). */
 /** Material Symbols icon (decorative: hidden from screen readers). */
 export function Icon({ name, className = "" }: { name: string; className?: string }) {
   return (
     <span className={`material-symbols-outlined ${className}`.trim()} aria-hidden="true">
       {name}
     </span>
-  );
-}
-
-export function RoleNotice({ needs }: { needs: Role }) {
-  const { role, setRole } = useRole();
-  if (role === needs) return null;
-  return (
-    <div className="notice notice-info" role="status">
-      This page is for the <strong>{needs}</strong> role; you're browsing as <strong>{role}</strong>.{" "}
-      <button type="button" className="link-button" onClick={() => setRole(needs)}>
-        Switch to {needs}
-      </button>
-    </div>
   );
 }
 
@@ -66,5 +49,20 @@ export const DECISION_TONE: Record<string, string> = {
 };
 
 export function humanize(code: string): string {
-  return code.replace(/_/g, " ").replace(/\b\w/, (c) => c.toUpperCase());
+  return code
+    .replace(/_/g, " ")
+    .replace(/\b\w/, (c) => c.toUpperCase())
+    .replace(/\b(qr|upi|kyc|vpa)\b/gi, (w) => w.toUpperCase());
+}
+
+/** "5 min ago" style relative time for queue rows. */
+export function timeAgo(value: string, now: number = Date.now()): string {
+  const then = new Date(value).getTime();
+  if (Number.isNaN(then)) return value;
+  const minutes = Math.max(0, Math.round((now - then) / 60000));
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes} min ago`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 48) return `${hours} h ago`;
+  return `${Math.round(hours / 24)} days ago`;
 }

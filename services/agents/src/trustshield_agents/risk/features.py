@@ -27,6 +27,7 @@ class RiskInputs(BaseModel):
     scam_pattern: str = "none"
     scam_cues: list[str] = Field(default_factory=list)
     has_message: bool = False
+    has_qr: bool = False
     payee_reported_links: int = 0
     payee_fan_in_24h: int = 0
     payee_is_merchant: bool = False

@@ -844,6 +844,17 @@
             ],
             "title": "Attachment Uri",
             "description": "gs:// or https:// URI of an uploaded screenshot, QR or transcript."
+          },
+          "qr": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/QrPayload"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when the payee came from a scanned / uploaded QR code."
           }
         },
         "type": "object",
@@ -983,6 +994,61 @@
         ],
         "title": "PolicyCitation",
         "description": "A retrieved policy passage. Every policy claim must point at one of these."
+      },
+      "QrPayload": {
+        "properties": {
+          "raw": {
+            "type": "string",
+            "maxLength": 2048,
+            "title": "Raw",
+            "description": "The full decoded QR text."
+          },
+          "payee_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payee Name",
+            "description": "pn= in the QR."
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount",
+            "description": "am= in the QR, if fixed."
+          },
+          "merchant_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 8
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Merchant Code",
+            "description": "mc= (merchant category code), if present."
+          }
+        },
+        "type": "object",
+        "required": [
+          "raw"
+        ],
+        "title": "QrPayload",
+        "description": "What the customer's app decoded from a scanned / uploaded UPI QR code.\n\nDecoding happens on the device; only these fields are sent. A UPI QR holds\n``upi://pay?pa=<vpa>&pn=<name>&am=<amount>&cu=INR&mc=<merchant code>``."
       },
       "RiskLevel": {
         "type": "string",
