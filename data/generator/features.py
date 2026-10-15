@@ -146,7 +146,8 @@ def dumps(features: dict) -> str:
 
     def block(rows: dict) -> str:
         lines = [
-            f"    {json.dumps(k)}: {json.dumps(v, ensure_ascii=False)}" for k, v in rows.items()
+            f"    {json.dumps(k)}: {json.dumps(v, ensure_ascii=False, allow_nan=False)}"
+            for k, v in rows.items()
         ]
         return "{\n" + ",\n".join(lines) + "\n  }"
 

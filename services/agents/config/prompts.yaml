@@ -1,3 +1,4 @@
 # Active prompt versions (files in prompts/<name>.<version>.md).
 scam_context: v1
 customer_message: v1
+screenshot_extract: v1
