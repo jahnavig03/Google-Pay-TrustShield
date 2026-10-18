@@ -62,12 +62,37 @@ async def test_get_unknown_case_is_404(client):
     assert resp.status_code == 404
 
 
-async def test_ask_answers_not_covered_by_policy_until_the_investigator_lands(client):
+async def test_new_case_carries_the_cited_policy_passages(client):
+    case_id = await open_case(client)
+    case = (await client.get(f"/api/v1/cases/{case_id}", headers=analyst())).json()
+    cited = [c["evidence_id"] for c in case["citations"]]
+    assert cited == case["evidence_ids"]
+    assert all(c["title"] and c["snippet"] for c in case["citations"])
+    assert case["missing_evidence"] == []
+
+
+async def test_ask_why_answers_from_the_signals_and_cites_policy(client):
     case_id = await open_case(client)
     resp = await client.post(
         f"/api/v1/cases/{case_id}/ask",
         headers=analyst(),
         json=DEMO2["ask_request"],
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    cited = [c["evidence_id"] for c in body["citations"]]
+    assert cited == ["policy_payment_safety_01", "policy_kyc_03"]
+    for evidence_id in cited:
+        assert f"[{evidence_id}]" in body["answer"]
+    assert "Urgent message" in body["answer"]
+
+
+async def test_ask_with_nothing_retrieved_is_exactly_not_covered_by_policy(client):
+    case_id = await open_case(client)
+    resp = await client.post(
+        f"/api/v1/cases/{case_id}/ask",
+        headers=analyst(),
+        json={"question": "Who won the cricket match?"},
     )
     assert resp.status_code == 200
     assert resp.json() == {"answer": NOT_COVERED_BY_POLICY, "citations": []}

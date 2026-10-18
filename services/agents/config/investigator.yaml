@@ -1,0 +1,10 @@
+# Investigator: grounded Q&A over a case (keyword search over data/policies/corpus.yaml).
+# A passage is cited only if its BM25 score reaches min_score AND it contains at least
+# min_coverage of the question's keywords; otherwise the answer is exactly "not covered by policy".
+# Policies already cited on the case score case_boost times higher. A second citation must score
+# at least relative_cutoff x the best one, so weak matches don't ride along.
+min_score: 1.2
+min_coverage: 0.5
+case_boost: 1.5
+relative_cutoff: 0.6
+max_citations: 2

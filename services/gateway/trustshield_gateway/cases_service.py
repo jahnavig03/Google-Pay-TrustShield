@@ -1,8 +1,8 @@
 """Case storage and the analyst flow (Firestore ``cases`` and ``approvals`` collections).
 
-Case content beyond what the risk decision already provides (full timeline, linked accounts,
-retrieved citations, grounded Q&A) comes from Jahnavi's Investigator agent. Until it lands the
-gateway stores what it can see and answers questions with "not covered by policy".
+Policy citations and grounded Q&A come from Jahnavi's Investigator
+(``trustshield_agents.policy_citations`` / ``answer_case_question``): a keyword search over the
+synthetic policy passages. With nothing retrieved, the answer is exactly "not covered by policy".
 """
 
 from __future__ import annotations
@@ -10,8 +10,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any
 
+from trustshield_agents import answer_case_question, policy_citations
 from trustshield_contracts import (
-    NOT_COVERED_BY_POLICY,
     AnalystAction,
     AnalystDecision,
     Case,
@@ -111,6 +111,8 @@ def build_case(req: PaymentRiskRequest, resp: PaymentRiskResponse) -> Case:
     """The case the gateway opens when ``analyst_case_required`` is true."""
     created_at = now()
     recommended = recommended_action_for(resp.decision)
+    citations = policy_citations(list(resp.evidence_ids))
+    missing = [] if citations else ["No policy passage was found for this case's evidence IDs."]
     return Case(
         case_id=case_id_for(req.transaction_id),
         transaction_id=req.transaction_id,
@@ -123,9 +125,9 @@ def build_case(req: PaymentRiskRequest, resp: PaymentRiskResponse) -> Case:
         top_signals=list(resp.top_signals),
         timeline=_timeline(req, resp, created_at),
         linked_entities=_linked_entities(req),
-        citations=[],  # Filled by the Investigator's Evidence & Policy agent.
+        citations=citations,
         recommended_action=recommended,
-        missing_evidence=["Retrieved policy citations not attached yet (Investigator pending)."],
+        missing_evidence=missing,
         evidence_ids=list(resp.evidence_ids),
     )
 
@@ -222,9 +224,5 @@ async def apply_decision(
 
 
 async def answer_question(case: Case, question: str) -> CaseAnswer:
-    """Grounded Q&A. Nothing is retrieved yet, so the answer is exactly "not covered by policy".
-
-    Replace the body with a call into Jahnavi's Investigator agent; the contract stays the same.
-    """
-    del case, question
-    return CaseAnswer(answer=NOT_COVERED_BY_POLICY, citations=[])
+    """Grounded Q&A: every policy claim cites a retrieved passage, else "not covered by policy"."""
+    return answer_case_question(case, question)

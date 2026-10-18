@@ -40,7 +40,7 @@ Sign in at **Sign in as analyst** with `analyst_hitesh`. Run Jahnavi #1 and Same
 | --- | --- | --- |
 | 1 | Case queue | Tiles: needs review / escalated / resolved / highest risk; red risk bars on held cases |
 | 2 | Open the ₹85,000 case | Risk meter in the "hold" band, "Recommended: Approve escalation", tabs |
-| 3 | **Evidence & Q&A** → Ask "Why was this payment flagged?" | Answers only from retrieved policy; until the Investigator is wired it says **"not covered by policy"** rather than inventing one |
+| 3 | **Evidence & Q&A** → Ask "Why was this payment flagged?", then "What does policy say about KYC update requests?", then "Who won the cricket match?" | The first two answer with the case's signals and quoted policy, each cited (`[policy_payment_safety_01]`, `[policy_kyc_03]`); the off-topic one says exactly **"not covered by policy"** instead of inventing an answer |
 | 4 | **Decision** → reason → **Approve escalation** | "Recorded: case is now Escalated · Audit AUD-…"; the tile moves to Escalated |
 
 ### Ronak: shop owner, merchant `MER-DEMO-0042`
