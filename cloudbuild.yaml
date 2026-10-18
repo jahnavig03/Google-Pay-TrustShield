@@ -13,6 +13,14 @@ substitutions:
   _GEMINI_FAST_THINKING_BUDGET: "0"
   _MIN_INSTANCES: "0"
   _MAX_INSTANCES: "2"
+  # Browser origins allowed to call the API. Separate several with a SEMICOLON, e.g.
+  # "https://a.web.app;https://b.firebaseapp.com": --set-env-vars below already uses commas to
+  # separate its own entries, so a comma here would start a new variable. The gateway accepts
+  # either separator (settings.cors_allow_origins). Override this on the trigger or on the
+  # command line once web/ is deployed, rather than editing the file. It has to be a
+  # substitution and not a manual setting on the Cloud Run service, because --set-env-vars
+  # replaces the whole environment on every deploy.
+  _CORS_ALLOW_ORIGINS: "http://localhost:5173"
 
 options:
   # Default machine type on purpose: the cost rule rules out paying for a bigger builder.
@@ -84,7 +92,7 @@ steps:
       - --min-instances=${_MIN_INSTANCES}
       - --max-instances=${_MAX_INSTANCES}
       - --port=8080
-      - --set-env-vars=TRUSTSHIELD_MODE=gcp,GCP_PROJECT_ID=${PROJECT_ID},GCP_REGION=${_REGION},GEMINI_FAST_MODEL=${_GEMINI_FAST_MODEL},GEMINI_FAST_THINKING_BUDGET=${_GEMINI_FAST_THINKING_BUDGET}
+      - --set-env-vars=TRUSTSHIELD_MODE=gcp,GCP_PROJECT_ID=${PROJECT_ID},GCP_REGION=${_REGION},GEMINI_FAST_MODEL=${_GEMINI_FAST_MODEL},GEMINI_FAST_THINKING_BUDGET=${_GEMINI_FAST_THINKING_BUDGET},CORS_ALLOW_ORIGINS=${_CORS_ALLOW_ORIGINS}
 
   # --------------------------------------------------------------------------------------
   # Post-deploy check: the service must answer /health before the build is called green.

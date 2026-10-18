@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 from pathlib import Path
 from typing import Literal
 
@@ -76,5 +77,12 @@ def cases_topic() -> str:
 
 
 def cors_allow_origins() -> list[str]:
+    """Allowed browser origins, separated by a comma or a semicolon.
+
+    Both work on purpose. A local ``.env`` reads naturally with commas, while the Cloud Run
+    deploy has to use semicolons: ``gcloud run deploy --set-env-vars`` already separates its own
+    entries with commas, so a comma inside this value would be read as the start of another
+    variable. See the CORS section of infra/README.md.
+    """
     raw = os.environ.get("CORS_ALLOW_ORIGINS", "http://localhost:5173")
-    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+    return [origin.strip() for origin in re.split(r"[,;]", raw) if origin.strip()]
