@@ -513,8 +513,7 @@ Built by **Team TrustShield** for the **Google Cloud AI Builder Cup · BFSI trac
 | Member | Area |
 |---|---|
 | **Ronak** | Synthetic data generator, BigQuery schemas and feature views, PayGuard |
-| **Sameer** | Web app: phone app, payment simulator, merchant check, analyst console |
-| **Jahnavi** | Agents (ADK orchestrator, risk engine, Investigator), contracts, evals |
+| **Jahnavi** | Agents (ADK orchestrator, risk engine, Investigator), contracts, evals, and the web app: phone app, payment simulator, merchant check, analyst console |
 | **Hitesh** | API gateway, Governance, audit log, Cloud Run and Cloud Build |
 
 <div align="center">
