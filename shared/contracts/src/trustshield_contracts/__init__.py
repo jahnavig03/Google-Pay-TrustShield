@@ -36,11 +36,13 @@ from .payment import (
     SafeActionCode,
     Signal,
 )
+from .translate import SUPPORTED_LANGUAGES, TranslateRequest, TranslateResponse
 
 __version__ = "0.1.0"
 
 __all__ = [
     "NOT_COVERED_BY_POLICY",
+    "SUPPORTED_LANGUAGES",
     "AnalystAction",
     "AnalystDecision",
     "AnalystDecisionRequest",
@@ -70,4 +72,6 @@ __all__ = [
     "SafeActionCode",
     "Signal",
     "TimelineEvent",
+    "TranslateRequest",
+    "TranslateResponse",
 ]

@@ -19,6 +19,7 @@ export type CaseSummary = Schemas["CaseSummary"];
 export type CaseAnswer = Schemas["CaseAnswer"];
 export type AnalystAction = Schemas["AnalystAction"];
 export type CaseDecisionResponse = Schemas["CaseDecisionResponse"];
+export type TranslateResponse = Schemas["TranslateResponse"];
 
 /** Demo roles, sent as X-Demo-Role (stands in for real auth in the prototype). */
 export type Role = "customer" | "analyst" | "merchant";
@@ -78,6 +79,8 @@ export function makeApi(role: Role, baseUrl: string = API_BASE_URL) {
           body: { action, analyst_id: analystId, reason },
         }),
       ),
+    translate: (targetLanguage: string, texts: string[]) =>
+      unwrap(client.POST("/api/v1/translate", { body: { target_language: targetLanguage, texts } })),
   };
 }
 

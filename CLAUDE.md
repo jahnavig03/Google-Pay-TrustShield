@@ -71,6 +71,7 @@ Any R ≥ 0.70 opens a case (`analyst_case_required = true`).
 ## Commands (keep this section updated)
 - Gateway install: `cd services/gateway && python3 -m venv .venv && source .venv/bin/activate && pip install --prefer-binary -r requirements.txt -e ../../shared/contracts -e ../agents`
 - Gateway: `cd services/gateway && source .venv/bin/activate && uvicorn main:app --reload` → http://localhost:8000/docs
+- Translation: `POST /api/v1/translate` uses Cloud Translation in gcp mode (API `translate.googleapis.com`), unchanged text in mock mode; `TRUSTSHIELD_TRANSLATOR=google` + `GCP_PROJECT_ID` to use it locally with ADC.
 - Gateway roles: send `X-Demo-Role: customer | analyst | merchant` (evaluate / `/cases*` / merchant). Missing header → 401, wrong role → 403.
 - Gateway image (build from the REPO ROOT): `docker build -f services/gateway/Dockerfile -t trustshield-gateway .` then `docker run --rm -p 8080:8080 -e TRUSTSHIELD_MODE=mock trustshield-gateway`
 - Web: `cd web && npm install && npm run dev` → http://localhost:5173 (needs the gateway on :8000; Node 24). `npm test`, `npm run lint`, `npm run build`; `npm run gen:api` after any contract change.

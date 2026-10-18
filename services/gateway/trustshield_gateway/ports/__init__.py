@@ -2,5 +2,6 @@
 
 from .doc_store import AlreadyExists, DocumentStore
 from .publisher import Publisher
+from .translator import TranslationUnavailable, Translator
 
-__all__ = ["AlreadyExists", "DocumentStore", "Publisher"]
+__all__ = ["AlreadyExists", "DocumentStore", "Publisher", "TranslationUnavailable", "Translator"]

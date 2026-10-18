@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from trustshield_agents import warm_up_async
 
 from .adapters import build_services
-from .routes import cases, health, merchant, payment
+from .routes import cases, health, merchant, payment, translate
 from .settings import cors_allow_origins
 
 log = logging.getLogger(__name__)
@@ -30,16 +30,18 @@ async def lifespan(app: FastAPI):
     # A misconfigured gcp deploy fails here, at start-up, rather than on the first payment.
     await warm_up_async()
     log.info(
-        "gateway ready: mode=%s store=%s publisher=%s",
+        "gateway ready: mode=%s store=%s publisher=%s translator=%s",
         services.mode,
         services.store_backend,
         services.publisher_backend,
+        services.translator.provider,
     )
     try:
         yield
     finally:
         await services.store.close()
         await services.publisher.close()
+        await services.translator.close()
 
 
 def create_app() -> FastAPI:
@@ -60,4 +62,5 @@ def create_app() -> FastAPI:
     app.include_router(payment.router)
     app.include_router(merchant.router)
     app.include_router(cases.router)
+    app.include_router(translate.router)
     return app

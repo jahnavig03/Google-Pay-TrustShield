@@ -1,5 +1,8 @@
 """The contract must stay compatible with the gateway's original request/response."""
 
+import pytest
+from pydantic import ValidationError
+
 from trustshield_contracts import Decision, PaymentRiskRequest, PaymentRiskResponse
 from trustshield_contracts.api import ENDPOINTS
 
@@ -54,6 +57,7 @@ def test_endpoint_paths():
         ("GET", "/api/v1/cases/{case_id}"),
         ("POST", "/api/v1/cases/{case_id}/ask"),
         ("POST", "/api/v1/cases/{case_id}/decision"),
+        ("POST", "/api/v1/translate"),
     }
 
 
@@ -77,3 +81,18 @@ def test_qr_field_is_optional_and_validated():
         },
     )
     assert isinstance(req.qr, QrPayload) and req.qr.payee_name == "A"
+
+
+def test_translate_request_limits():
+    from trustshield_contracts import TranslateRequest
+
+    assert TranslateRequest(target_language="hi", texts=["Proceed to pay"]).texts
+    for bad in (
+        {"target_language": "xx", "texts": ["hi"]},
+        {"target_language": "hi", "texts": []},
+        {"target_language": "hi", "texts": ["a"] * 101},
+        {"target_language": "hi", "texts": ["a" * 2001]},
+        {"target_language": "hi", "texts": ["a" * 1999] * 11},
+    ):
+        with pytest.raises(ValidationError):
+            TranslateRequest.model_validate(bad)

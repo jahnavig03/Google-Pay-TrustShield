@@ -119,6 +119,12 @@ export const MESSAGES: PhoneMessage[] = [
 /** Things to try, shown next to the phone (and below it on a real phone). */
 export const GUIDE: { title: string; how: string; expect: string; tone: string }[] = [
   {
+    title: "Your language",
+    how: "Tap the अ/English chip → हिन्दी (or any of 10 Indian languages).",
+    expect: "Translated",
+    tone: "caution",
+  },
+  {
     title: "The “account blocked” SMS",
     how: "Tap the notification, then Pay ₹85,000.",
     expect: "Paused",

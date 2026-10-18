@@ -36,6 +36,11 @@ then allow → dummy PIN pad → receipt, warn → continue or cancel, step-up �
 paused (no PIN). One synthetic customer and her messages live in `src/phone/scenarios.ts`. The PIN
 pad keeps only the number of taps; digits are never stored or sent.
 
+**Language:** `src/i18n/language.tsx` (`LanguageProvider`, `t("Pay {0} to {1}", [amount, upiId])`).
+English is the source; other languages come from `POST /api/v1/translate` (Cloud Translation in gcp
+mode, unchanged text in mock mode), batched, cached per language in localStorage, with reviewed Hindi
+for short labels. If translation fails the app stays in English.
+
 ## QR scanning (Payment check)
 
 **Scan QR** (next to "Pay to") opens a dialog: upload a photo, use the camera, or pick a sample QR

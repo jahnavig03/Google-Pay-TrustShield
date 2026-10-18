@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import Depends, Request
 
 from .adapters import Services
-from .ports import DocumentStore, Publisher
+from .ports import DocumentStore, Publisher, Translator
 
 
 def get_services(request: Request) -> Services:
@@ -27,3 +27,10 @@ def get_publisher(services: ServicesDep) -> Publisher:
 
 StoreDep = Annotated[DocumentStore, Depends(get_store)]
 PublisherDep = Annotated[Publisher, Depends(get_publisher)]
+
+
+def get_translator(services: ServicesDep) -> Translator:
+    return services.translator
+
+
+TranslatorDep = Annotated[Translator, Depends(get_translator)]
