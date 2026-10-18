@@ -65,6 +65,20 @@ def publisher_backend() -> str:
     return "pubsub" if mode() == "gcp" else "noop"
 
 
+def translator_backend() -> str:
+    """``google`` (Cloud Translation) in gcp mode, otherwise ``mock`` (text comes back unchanged).
+    ``TRUSTSHIELD_TRANSLATOR`` overrides, e.g. ``google`` for a local run with ADC."""
+    override = os.environ.get("TRUSTSHIELD_TRANSLATOR", "").strip().lower()
+    if override:
+        return override
+    return "google" if mode() == "gcp" else "mock"
+
+
+def translation_project_id() -> str:
+    """The project billed for Cloud Translation (GCP_PROJECT_ID, needed even in mock mode)."""
+    return require_env("GCP_PROJECT_ID") if translator_backend() == "google" else ""
+
+
 def project_id() -> str:
     """Real project id in gcp mode; any non-empty string satisfies the Firestore emulator."""
     if mode() == "gcp":

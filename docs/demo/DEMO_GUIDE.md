@@ -33,6 +33,11 @@ notification a moment after the page opens.
 | Refund SMS | AD-SHOPRF → Pay ₹10 | Paused |
 | New UPI ID | Pay UPI ID → `aarav.pandit.00720@synthbank` → ₹15,000 | Warning |
 
+**Language:** tap the language chip (top right of the app's home screen) → pick हिन्दी or any of 10
+Indian languages. Menus, the SMS, and TrustShield's live warning and signals switch to that language
+through Google Cloud Translation (cached, so each text is translated once). Names, amounts and UPI IDs
+are never translated. On a message, "Show original" shows the English text the checks actually read.
+
 The PIN pad is a dummy: any 6 digits work, only the count of taps is kept, nothing is sent, and the
 screen says "never enter your real UPI PIN here".
 

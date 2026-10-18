@@ -106,6 +106,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/translate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Translate app text into the customer's language */
+        post: operations["translateTexts"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -489,6 +506,36 @@ export interface components {
             /** Evidence Id */
             evidence_id?: string | null;
         };
+        /** TranslateRequest */
+        TranslateRequest: {
+            /**
+             * Target Language
+             * @example hi
+             */
+            target_language: string;
+            /**
+             * Texts
+             * @example [
+             *       "Proceed to pay"
+             *     ]
+             */
+            texts: string[];
+        };
+        /**
+         * TranslateResponse
+         * @description ``translations[i]`` is ``texts[i]`` in ``target_language`` (same order, same length).
+         */
+        TranslateResponse: {
+            /** Target Language */
+            target_language: string;
+            /** Translations */
+            translations: string[];
+            /**
+             * Provider
+             * @example google-cloud-translation
+             */
+            provider: string;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -685,6 +732,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CaseDecisionResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    translateTexts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TranslateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TranslateResponse"];
                 };
             };
             /** @description Validation Error */
