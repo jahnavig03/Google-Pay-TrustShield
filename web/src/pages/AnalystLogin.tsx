@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import { ErrorNotice, Icon } from "../components/ui";
+import { ANALYST_ACCESS_CODE } from "../config";
 import { useSession } from "../session";
 
 /** Demo analyst IDs for the team (docs/demo/DEMO_GUIDE.md). Suggestions only; any valid ID works. */
@@ -64,6 +65,7 @@ export function AnalystLogin() {
           <input
             type="password"
             value={code}
+            placeholder={`Demo code: ${ANALYST_ACCESS_CODE}`}
             autoComplete="current-password"
             onChange={(e) => {
               setCode(e.target.value);

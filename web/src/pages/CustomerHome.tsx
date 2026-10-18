@@ -18,7 +18,7 @@ export function CustomerHome() {
         </Link>
         <Link to="/customer/pay" className="choice-card">
           <Icon name="payments" className="choice-icon" />
-          <span className="choice-title">Payment simulator</span>
+          <span className="choice-title">Payment check</span>
           <span className="choice-text">
             Try a UPI payment and see whether TrustShield pauses it, and why.
           </span>

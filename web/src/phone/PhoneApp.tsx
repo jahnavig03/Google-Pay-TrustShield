@@ -521,6 +521,7 @@ function AmountEntry({
           placeholder="0"
           readOnly={fixed}
           aria-label="Amount"
+          style={{ width: `${Math.max(1, amount.length) + 0.5}ch` }}
           onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))}
         />
       </label>
@@ -688,7 +689,7 @@ function PinPad({
     if (processing) return;
     if (key === "back") setCount((c) => Math.max(0, c - 1));
     else if (key === "ok") {
-      if (count < 4) return;
+      if (count < PIN_LENGTH) return;
       setProcessing(true);
       window.setTimeout(onDone, 900);
     } else setCount((c) => Math.min(PIN_LENGTH, c + 1));
@@ -728,7 +729,8 @@ function PinPad({
       </div>
       <p className="pin-demo" role="note">
         <Icon name="lock" />
-        Demo only: never enter your real UPI PIN here. Any 4–6 digits work and nothing is stored.
+        Demo only: enter any 6-digit PIN (e.g. 123456). Never use your real UPI PIN here; nothing is
+        stored.
       </p>
       <h2 className="pin-title">{processing ? "Processing…" : "Enter UPI PIN"}</h2>
       <div className="pin-dots" aria-label={`${count} of ${PIN_LENGTH} digits entered`}>
@@ -743,7 +745,7 @@ function PinPad({
             type="button"
             className={k === "ok" ? "key key-ok" : "key"}
             aria-label={k === "back" ? "Delete" : k === "ok" ? "Confirm PIN" : `Digit ${k}`}
-            disabled={processing || (k === "ok" && count < 4)}
+            disabled={processing || (k === "ok" && count < PIN_LENGTH)}
             onClick={() => press(k)}
           >
             {k === "back" ? <Icon name="backspace" /> : k === "ok" ? <Icon name="check" /> : k}

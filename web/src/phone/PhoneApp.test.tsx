@@ -52,22 +52,22 @@ describe("/customer/app", () => {
     await userEvent.click(screen.getByRole("button", { name: "Proceed to pay" }));
 
     const pin = await screen.findByLabelText("Enter UPI PIN", {}, SLOW);
-    expect(pin).toHaveTextContent("never enter your real UPI PIN");
+    expect(pin).toHaveTextContent("enter any 6-digit PIN");
     expect(pin).toHaveTextContent("Checked by TrustShield");
     const confirm = within(pin).getByRole("button", { name: "Confirm PIN" });
-    for (const digit of ["7", "3", "1"]) {
+    for (const digit of ["7", "3", "1", "9", "4"]) {
       await userEvent.click(within(pin).getByRole("button", { name: `Digit ${digit}` }));
     }
-    expect(confirm).toBeDisabled(); // at least 4 digits
-    await userEvent.click(within(pin).getByRole("button", { name: "Digit 9" }));
-    expect(pin).not.toHaveTextContent("7319");
+    expect(confirm).toBeDisabled(); // a UPI PIN here is 6 digits
+    await userEvent.click(within(pin).getByRole("button", { name: "Digit 2" }));
+    expect(pin).not.toHaveTextContent("731942");
     await userEvent.click(confirm);
 
     const paid = await screen.findByLabelText("Payment successful", {}, SLOW);
     expect(paid).toHaveTextContent("₹40 paid");
     expect(paid).toHaveTextContent("AUD-TEST-ALLOW");
     expect(calls).toHaveLength(1);
-    expect(JSON.stringify(calls[0].body)).not.toContain("7319");
+    expect(JSON.stringify(calls[0].body)).not.toContain("731942");
   });
 
   it("a step-up asks the customer to confirm they verified the payee before continuing", async () => {

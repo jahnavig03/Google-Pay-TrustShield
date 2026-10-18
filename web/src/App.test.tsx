@@ -32,21 +32,21 @@ describe("entry flow", () => {
     );
   });
 
-  it("customer: landing -> choice -> payment simulator opens with only customer tabs", async () => {
+  it("customer: landing -> choice -> payment check opens with only customer tabs", async () => {
     mockGateway({});
     renderApp("/");
     await userEvent.click(screen.getByRole("link", { name: /Continue as customer/ }));
     expect(screen.getByRole("heading", { name: "What would you like to do?" })).toBeVisible();
-    await userEvent.click(screen.getByRole("link", { name: /Payment simulator/ }));
+    await userEvent.click(screen.getByRole("link", { name: /Payment check/ }));
 
-    expect(screen.getByRole("heading", { level: 1, name: "Payment simulator" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 1, name: "Payment check" })).toBeVisible();
     const nav = screen.getByRole("navigation", { name: "Main" });
     expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual([
       "smartphonePhone app",
-      "paymentsPayment simulator",
+      "paymentsPayment check",
       "storefrontMerchant check",
     ]);
-    expect(within(nav).getByRole("link", { name: "Payment simulator" })).toHaveClass("active");
+    expect(within(nav).getByRole("link", { name: "Payment check" })).toHaveClass("active");
     expect(screen.queryByRole("link", { name: /Analyst console/ })).toBeNull();
   });
 
@@ -61,7 +61,7 @@ describe("entry flow", () => {
   it("old /pay and /merchant links still work", () => {
     mockGateway({});
     renderApp("/pay");
-    expect(screen.getByRole("heading", { level: 1, name: "Payment simulator" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 1, name: "Payment check" })).toBeVisible();
   });
 });
 
@@ -90,7 +90,7 @@ describe("analyst sign-in", () => {
 
     expect(await screen.findByRole("heading", { name: "Case queue" })).toBeVisible();
     expect(screen.getByTitle("Signed-in analyst")).toHaveTextContent("analyst_demo_01");
-    expect(screen.queryByRole("link", { name: /Payment simulator/ })).toBeNull();
+    expect(screen.queryByRole("link", { name: /Payment check/ })).toBeNull();
     expect(calls.length).toBeGreaterThan(0);
     expect(calls.every((c) => c.role === "analyst")).toBe(true);
   });

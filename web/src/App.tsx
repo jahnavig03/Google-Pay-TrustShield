@@ -23,7 +23,7 @@ export function AppRoutes() {
         <Route path="analyst/login" element={<AnalystLogin />} />
       </Route>
 
-      {/* Customer panel: phone app, payment simulator, merchant check */}
+      {/* Customer panel: phone app, payment check, merchant check */}
       <Route element={<CustomerLayout />}>
         <Route path="customer/app" element={<PhoneAppPage />} />
         <Route path="customer/pay" element={<PayPage />} />

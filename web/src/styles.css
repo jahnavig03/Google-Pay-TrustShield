@@ -1076,10 +1076,10 @@ button.wide { width: 100%; }
 .amount-field { display: flex; flex-direction: row; justify-content: center; align-items: baseline; gap: 4px; margin: 0.75rem 0 0; }
 .amount-field .rupee { font-size: 2rem; }
 .amount-field input {
-  width: 8ch; font-size: 2.75rem; font-weight: 500; text-align: left; border: none; background: transparent;
+  max-width: 9ch; font-size: 2.75rem; font-weight: 500; text-align: center; border: none; background: transparent;
   padding: 0; color: var(--md-on-surface); outline: none;
 }
-.note-field { display: flex; justify-content: center; }
+.note-field { display: flex; flex-direction: column; align-items: center; }
 .note-field input { width: 70%; text-align: center; border-radius: var(--md-shape-full); background: var(--md-surface-container); border: none; }
 .linked-message {
   display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--md-shape-md);
@@ -1168,3 +1168,5 @@ button.wide { width: 100%; }
   .phone-app { border-radius: var(--md-shape-lg); min-height: calc(100dvh - 230px); box-shadow: var(--md-elevation-1); }
   .push { top: 8px; }
 }
+.amount-field input:focus, .amount-field input:focus-visible { border: none; box-shadow: none; outline: none; }
+.amount-field:focus-within .rupee { color: var(--md-primary); }

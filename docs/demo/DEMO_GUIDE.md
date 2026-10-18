@@ -33,7 +33,7 @@ notification a moment after the page opens.
 | Refund SMS | AD-SHOPRF → Pay ₹10 | Paused |
 | New UPI ID | Pay UPI ID → `aarav.pandit.00720@synthbank` → ₹15,000 | Warning |
 
-The PIN pad is a dummy: any 4–6 digits work, only the count of taps is kept, nothing is sent, and the
+The PIN pad is a dummy: any 6 digits work, only the count of taps is kept, nothing is sent, and the
 screen says "never enter your real UPI PIN here".
 
 ## Sample data, per person
@@ -41,13 +41,13 @@ screen says "never enter your real UPI PIN here".
 ### Jahnavi: customer, payer `payer_demo_001` (usually pays ~₹1,800)
 | # | Where | Input | Expected |
 | --- | --- | --- | --- |
-| 1 | Payment simulator → **Demo 1 · ₹85k scam** | ₹85,000 to `kyc.helpdesk.verify@synthbank`, payee added 4 min ago, new device, "account will be BLOCKED… KYC" SMS | **Paused** (R ≈ 0.997): urgent message, 47× usual amount, new recipient, linked to reported accounts, new device |
+| 1 | Payment check → **Demo 1 · ₹85k scam** | ₹85,000 to `kyc.helpdesk.verify@synthbank`, payee added 4 min ago, new device, "account will be BLOCKED… KYC" SMS | **Paused** (R ≈ 0.997): urgent message, 47× usual amount, new recipient, linked to reported accounts, new device |
 | 2 | Same, but paste a Hinglish message | "Aapka khata aaj band ho jayega, abhi ke abhi 85000 bhejo verification account me" | Paused; urgency spotted in Hinglish |
 | 3 | Same payee, **delete the message**, untick new device | ₹85,000 | **Still paused** (R ≈ 0.90) on amount, the new payee and its links to reported accounts: no SMS needed |
-| 4 | Payment simulator → **Everyday ₹40** | ₹40 to `chai.ramesh@synthbank` | **Looks fine** (allowed) |
+| 4 | Payment check → **Everyday ₹40** | ₹40 to `chai.ramesh@synthbank` | **Looks fine** (allowed) |
 
 ### Sameer: customer with a QR, payer `payer_demo_003` (usually pays ~₹650)
-Payment simulator → **Scan QR** → **Sample QRs** (or upload / show the PNGs in `web/public/demo-qr/` to a camera):
+Payment check → **Scan QR** → **Sample QRs** (or upload / show the PNGs in `web/public/demo-qr/` to a camera):
 | # | QR | Expected |
 | --- | --- | --- |
 | 1 | **Tea stall (genuine)**: Ramesh Tea Stall → `chai.ramesh@synthbank`, ₹40 | **Looks fine**; "QR code checked: the name matches its UPI ID's owner" |
