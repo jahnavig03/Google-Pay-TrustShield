@@ -1,0 +1,47 @@
+# Policy passages the Investigator searches for grounded case Q&A.
+# All text is SYNTHETIC, written for this prototype; it is not any bank's or app's real policy.
+# Titles and URIs live in config/evidence.yaml (the catalog); this file adds the passage text.
+# The first passage of each policy is its lead passage, quoted when a case cites that policy.
+
+policy_payment_safety_01:
+  - "Messages that threaten to block an account unless money is paid immediately are a known manipulation pattern. Advise the customer to pause and verify through official channels."
+  - "Urgency is the strongest single signal of an authorised push payment scam: deadlines such as 'today', 'within 30 minutes' or 'before your account is blocked' are designed to stop the customer checking."
+  - "A bank never asks a customer to move money to keep an account active, to unblock an account, or to protect funds in a 'safe' account."
+  - "When an urgent message is linked to a large payment to a new recipient, hold the payment and contact the customer on a number already on file, never one given in the message."
+
+policy_payment_safety_02:
+  - "Before paying a new or unusual recipient, customers should confirm the recipient's details through a contact they already trust."
+  - "A large amount compared with the customer's usual payments, a recipient added minutes earlier, or a new device or location each raise the risk of a payment; together they warrant a warning or step-up verification."
+  - "A genuine large payment to a long-standing recipient, such as monthly rent, should be allowed without friction."
+
+policy_kyc_03:
+  - "KYC is never completed by transferring money to an individual or a 'verification' account."
+  - "KYC updates are done only in the bank's official app or at a branch, using the customer's own documents. No KYC process asks for a UPI PIN, OTP or payment."
+  - "Messages claiming that KYC is pending, expired or will lead to an account block are treated as impersonation; the payment is held and the customer is told how to check with the bank directly."
+
+policy_escalation_04:
+  - "A hold or escalation may only be executed after an analyst records an approval decision. Every decision carries an audit ID."
+  - "Cases open automatically when the risk score R is 0.70 or higher. The analyst reviews the signals, timeline, linked accounts and cited policy before approving escalation, starting customer outreach, or closing the case."
+  - "An analyst's reason is required for every decision and is written to the audit log together with the analyst ID and time."
+  - "If a case has no evidence IDs, no hold or escalation may be executed; the case is returned for evidence first."
+
+policy_merchant_05:
+  - "Merchants should confirm a credit in their settlement ledger, not rely on a payment screenshot."
+  - "A screenshot whose amount, transaction ID or time does not match the ledger, or whose amount text looks edited, is treated as suspicious; the merchant should hold the goods until the credit appears."
+
+policy_refund_06:
+  - "Genuine refunds are credited to the customer; they never require the customer to pay or approve a collect request."
+  - "Callers or messages offering a refund, cashback or prize in exchange for a small 'processing' payment are a known scam pattern; the payment is held and the customer is advised to contact the merchant through its official channel."
+
+policy_collect_07:
+  - "Receiving money never requires entering a UPI PIN or approving a collect request."
+  - "A collect request presented as 'accept to receive money' is a payment out of the customer's account. Customers should decline collect requests they did not expect."
+
+policy_qr_08:
+  - "Scanning a QR code is for paying, not receiving. Check that the name shown after scanning matches the intended recipient."
+  - "A QR sticker at a shop can be replaced with one that pays a different account. If the name in the QR does not match the registered owner of its UPI ID, or a shop QR does not belong to a registered merchant, the payment is paused for verification."
+  - "A QR code that opens a website link, rather than a UPI payment, is never a way to pay or to receive money and should not be followed."
+
+policy_mule_09:
+  - "Accounts receiving from many unrelated payers in a short window, or sharing devices with reported accounts, are reviewed by fraud operations."
+  - "A recipient linked to accounts recently reported for fraud raises the mule-network risk of a payment; the case lists the linked accounts for the analyst to review."

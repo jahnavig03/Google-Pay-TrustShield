@@ -131,3 +131,13 @@ src/trustshield_agents/
   ports/           FeatureStore, ScamClassifier, EvidenceProvider, CustomerMessageWriter
   adapters/        mock + gcp implementations, factory.py
 ```
+
+## Investigator: grounded case Q&A
+
+`answer_case_question(case, question)` and `policy_citations(evidence_ids)` (no ADK import; the
+gateway calls them for `POST /cases/{id}/ask` and when it opens a case). Retrieval is a free BM25
+keyword search over the synthetic passages in `data/policies/corpus.yaml`; titles and URIs come
+from the catalog in `config/evidence.yaml`, and the search thresholds from `config/investigator.yaml`.
+"Why was this flagged?" is answered from the case's signals plus the lead passage of each cited
+policy. Every policy claim quotes a retrieved passage with its `[evidence_id]`; if nothing scores
+high enough the answer is exactly "not covered by policy". Same behaviour in mock and gcp mode.
