@@ -57,12 +57,39 @@ location is fixed at creation and cannot be changed afterwards.
 3. **push** — `asia-south1-docker.pkg.dev/$PROJECT_ID/trustshield/gateway:$SHORT_SHA` and
    `:latest`.
 4. **deploy** — `gcloud run deploy trustshield-gateway --region asia-south1
-   --allow-unauthenticated --min-instances 0 --max-instances 2`, with
-   `TRUSTSHIELD_MODE=gcp,GCP_PROJECT_ID,GCP_REGION,GEMINI_FAST_MODEL,GEMINI_FAST_THINKING_BUDGET`.
+   --allow-unauthenticated --min-instances 0 --max-instances 2`, with `TRUSTSHIELD_MODE=gcp`,
+   `GCP_PROJECT_ID`, `GCP_REGION`, `GEMINI_FAST_MODEL`, `GEMINI_FAST_THINKING_BUDGET` and
+   `CORS_ALLOW_ORIGINS`.
 5. **smoke** — curls the deployed `/health` and fails the build if it does not answer.
 
 Substitutions (`_REGION`, `_SERVICE`, `_MIN_INSTANCES`, `_MAX_INSTANCES`, `_GEMINI_FAST_MODEL`,
-`_GEMINI_FAST_THINKING_BUDGET`) can be overridden on the trigger without editing the file.
+`_GEMINI_FAST_THINKING_BUDGET`, `_CORS_ALLOW_ORIGINS`) can be overridden on the trigger without
+editing the file.
+
+### Environment variables and CORS
+
+The deploy uses `--set-env-vars`, which **replaces the whole environment** on every deploy. A
+variable added by hand on the Cloud Run service is therefore wiped by the next build. Everything
+the service needs has to come from this file or a trigger substitution.
+
+That is why the allowed browser origins are `_CORS_ALLOW_ORIGINS` rather than a manual setting.
+
+**Separate several origins with a semicolon, not a comma.** `--set-env-vars` already uses commas
+to separate its own entries, so a comma inside this value starts a new variable and gcloud
+rejects the flag. The gateway accepts either separator
+(`settings.cors_allow_origins`), so a local `.env` can keep using commas.
+
+```bash
+gcloud builds submit --config cloudbuild.yaml --project qualified-sun-511214-t1 \
+  --substitutions=SHORT_SHA=$(git rev-parse --short HEAD),\
+_CORS_ALLOW_ORIGINS='https://qualified-sun-511214-t1.web.app;https://qualified-sun-511214-t1.firebaseapp.com'
+```
+
+Quote the value in a shell: an unquoted `;` ends the command. Firebase Hosting serves the same
+site on both `.web.app` and `.firebaseapp.com`, so list both or one of them will fail CORS.
+
+Do not use `*`: the gateway sends `allow_credentials=True`, and browsers reject a wildcard origin
+on a credentialed request.
 
 Running it by hand needs a `SHORT_SHA`, which only a trigger sets automatically:
 
