@@ -42,6 +42,7 @@ describe("entry flow", () => {
     expect(screen.getByRole("heading", { level: 1, name: "Payment simulator" })).toBeVisible();
     const nav = screen.getByRole("navigation", { name: "Main" });
     expect(within(nav).getAllByRole("link").map((a) => a.textContent)).toEqual([
+      "smartphonePhone app",
       "paymentsPayment simulator",
       "storefrontMerchant check",
     ]);

@@ -80,6 +80,10 @@ const flows = {
     await p.getByRole("button", { name: "Check payment" }).click();
     await p.getByRole("article", { name: "Verification result" }).waitFor();
   },
+  phone_app: async (p) => {
+    await p.goto(`${BASE}/customer/app`);
+    await p.getByRole("button", { name: "Pay Ramesh Tea Stall" }).waitFor();
+  },
   analyst_login: async (p) => p.goto(`${BASE}/analyst/login`),
   analyst_case: async (p) => {
     await p.goto(`${BASE}/analyst/login`);

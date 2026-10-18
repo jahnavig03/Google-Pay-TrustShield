@@ -28,6 +28,14 @@ protection = Firebase Auth or IAP in front of the analyst routes (PRD §7). The 
 `sessionStorage`, so closing the tab signs out; decisions are recorded under the signed-in
 analyst ID.
 
+## Phone payment app
+
+`/customer/app` (`src/phone/`) is a simulated UPI app ("SynthPay") with TrustShield built in: home
+screen with contacts and an SMS/chat inbox, Scan QR, Pay UPI ID, amount entry, the TrustShield check,
+then allow → dummy PIN pad → receipt, warn → continue or cancel, step-up → confirm you verified, hold →
+paused (no PIN). One synthetic customer and her messages live in `src/phone/scenarios.ts`. The PIN
+pad keeps only the number of taps; digits are never stored or sent.
+
 ## QR scanning (Payment simulator)
 
 **Scan QR** (next to "Pay to") opens a dialog: upload a photo, use the camera, or pick a sample QR

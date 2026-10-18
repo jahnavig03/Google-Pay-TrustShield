@@ -8,6 +8,7 @@ import { CustomerHome } from "./pages/CustomerHome";
 import { LandingPage } from "./pages/LandingPage";
 import { MerchantPage } from "./pages/MerchantPage";
 import { PayPage } from "./pages/PayPage";
+import { PhoneAppPage } from "./phone/PhoneApp";
 import { RoleProvider } from "./role";
 import { SessionProvider } from "./session";
 import { ThemeProvider } from "./theme";
@@ -22,8 +23,9 @@ export function AppRoutes() {
         <Route path="analyst/login" element={<AnalystLogin />} />
       </Route>
 
-      {/* Customer panel: payment simulator + merchant check */}
+      {/* Customer panel: phone app, payment simulator, merchant check */}
       <Route element={<CustomerLayout />}>
+        <Route path="customer/app" element={<PhoneAppPage />} />
         <Route path="customer/pay" element={<PayPage />} />
         <Route path="customer/merchant" element={<MerchantPage />} />
       </Route>

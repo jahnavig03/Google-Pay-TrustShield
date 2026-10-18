@@ -15,6 +15,27 @@ The sign-in page suggests these IDs. The access code is a **demo gate, not secur
 the web app, and real protection would be Firebase Auth / IAP. Decisions are recorded under the ID
 you sign in with, so each of us shows up in the audit log under our own name.
 
+## Phone payment app (for judges: the real-life experience)
+
+`/customer/app` (Customer → **Phone payment app**) is a simulated UPI app, "SynthPay", with
+TrustShield built in. On a laptop it shows inside a phone frame; on a real phone it fills the screen.
+The customer is Priya (`payer_demo_001`, usually pays ~₹1,800). A scam SMS arrives as a
+notification a moment after the page opens.
+
+| Try | How | Expect |
+| --- | --- | --- |
+| "Account blocked" SMS | Tap the notification → Pay ₹85,000 → Proceed | Paused (HOLD), never reaches the PIN screen; case opens |
+| Rent | Open Anil Sharma's message → Pay ₹25,000 | Goes through: PIN pad → paid receipt with a TrustShield check ID |
+| Swapped QR sticker | Scan QR → Sample QRs → Tea stall (swapped) | Paused: "QR name doesn't match" |
+| Genuine tea stall | Scan QR → Tea stall (genuine) → ₹40 | Goes through |
+| "Army buyer" chat | Unknown number → Pay ₹12,000 | Step-up: must tick "I've verified" before the PIN |
+| Job fee SMS | HR-JOBSIN → Pay ₹4,500 | Warning: can continue after a pause |
+| Refund SMS | AD-SHOPRF → Pay ₹10 | Paused |
+| New UPI ID | Pay UPI ID → `aarav.pandit.00720@synthbank` → ₹15,000 | Warning |
+
+The PIN pad is a dummy: any 4–6 digits work, only the count of taps is kept, nothing is sent, and the
+screen says "never enter your real UPI PIN here".
+
 ## Sample data, per person
 
 ### Jahnavi: customer, payer `payer_demo_001` (usually pays ~₹1,800)
