@@ -7,6 +7,7 @@ import { ShieldMark } from "../components/Brand";
 import { ErrorNotice, Icon, formatRupees } from "../components/ui";
 import { QrScanner, type QrSample } from "../qr/QrScanner";
 import { hostOf, parseQr, type ParsedQr } from "../qr/upi";
+import { LANGUAGES, LanguageProvider, useLanguage } from "../i18n/language";
 import { usePageRole, useRole } from "../role";
 import {
   CONTACTS,
@@ -32,6 +33,7 @@ export interface Draft {
 
 type Screen =
   | { name: "home" }
+  | { name: "language" }
   | { name: "message"; message: PhoneMessage }
   | { name: "upi-id" }
   | { name: "not-payment"; qr: OtherQr }
@@ -66,7 +68,9 @@ export function PhoneAppPage() {
       <div className="phone-layout">
         <div className="phone-frame" aria-label="Simulated phone">
           <span className="phone-notch" aria-hidden="true" />
-          <PhoneApp />
+          <LanguageProvider>
+            <PhoneApp />
+          </LanguageProvider>
         </div>
         <DemoGuide />
       </div>
@@ -103,6 +107,7 @@ function DemoGuide() {
 
 export function PhoneApp() {
   const { api } = useRole();
+  const { lang, t } = useLanguage();
   const [screen, setScreen] = useState<Screen>({ name: "home" });
   const [scannerOpen, setScannerOpen] = useState(false);
   const [notification, setNotification] = useState<PhoneMessage | null>(null);
@@ -191,7 +196,7 @@ export function PhoneApp() {
   }, []);
 
   return (
-    <div className="phone-app">
+    <div className="phone-app" lang={lang}>
       <StatusBar />
       {notification && screen.name === "home" && (
         <button
@@ -205,7 +210,7 @@ export function PhoneApp() {
           <Icon name="sms" className="push-icon" />
           <span className="push-body">
             <strong>{notification.from}</strong>
-            <span>{notification.text}</span>
+            <span>{t(notification.text)}</span>
           </span>
         </button>
       )}
@@ -217,8 +222,10 @@ export function PhoneApp() {
             onUpiId={() => setScreen({ name: "upi-id" })}
             onContact={(payee) => setScreen({ name: "amount", draft: { payee, amount: 0, note: "" } })}
             onMessage={(message) => setScreen({ name: "message", message })}
+            onLanguage={() => setScreen({ name: "language" })}
           />
         )}
+        {screen.name === "language" && <LanguageScreen onDone={home} />}
         {screen.name === "message" && (
           <MessageView
             message={screen.message}
@@ -263,7 +270,7 @@ export function PhoneApp() {
             result={screen.result}
             onCancel={() => setScreen({ ...screen, name: "cancelled" })}
             onContinue={() => setScreen({ ...screen, name: "pin" })}
-            onSimulated={setToast}
+            onSimulated={(label) => setToast(t("Simulated: “{0}”.", [label]))}
           />
         )}
         {screen.name === "pin" && (
@@ -343,12 +350,16 @@ function Home({
   onUpiId,
   onContact,
   onMessage,
+  onLanguage,
 }: {
   onScan: () => void;
   onUpiId: () => void;
   onContact: (payee: Payee) => void;
   onMessage: (message: PhoneMessage) => void;
+  onLanguage: () => void;
 }) {
+  const { lang, t } = useLanguage();
+  const current = LANGUAGES.find((l) => l.code === lang) ?? LANGUAGES[0];
   return (
     <div className="phone-home">
       <div className="home-head">
@@ -356,29 +367,40 @@ function Home({
           <span className="app-name">SynthPay</span>
           <span className="protected">
             <ShieldMark size={14} />
-            Protected by TrustShield
+            {t("Protected by TrustShield")}
           </span>
         </div>
-        <Avatar name={PERSONA.name} small />
+        <div className="home-head-actions">
+          <button
+            type="button"
+            className="lang-chip"
+            onClick={onLanguage}
+            aria-label={`Language: ${current.english}. Change language`}
+          >
+            <Icon name="translate" />
+            {current.native}
+          </button>
+          <Avatar name={PERSONA.name} small />
+        </div>
       </div>
-      <p className="greeting">Hi {PERSONA.name}</p>
+      <p className="greeting">{t("Hi {0}", [PERSONA.name])}</p>
 
       <div className="quick-actions">
         <button type="button" onClick={onScan}>
           <Icon name="qr_code_scanner" />
-          Scan QR
+          {t("Scan QR")}
         </button>
         <button type="button" onClick={onUpiId}>
           <Icon name="alternate_email" />
-          Pay UPI ID
+          {t("Pay UPI ID")}
         </button>
         <button type="button" onClick={() => onContact(CONTACTS[0])}>
           <Icon name="contacts" />
-          Pay contact
+          {t("Pay contact")}
         </button>
       </div>
 
-      <h3 className="phone-section">People</h3>
+      <h3 className="phone-section">{t("People")}</h3>
       <ul className="people">
         {CONTACTS.map((c) => (
           <li key={c.vpa}>
@@ -390,7 +412,7 @@ function Home({
         ))}
       </ul>
 
-      <h3 className="phone-section">Messages</h3>
+      <h3 className="phone-section">{t("Messages")}</h3>
       <ul className="inbox">
         {MESSAGES.map((m) => (
           <li key={m.id}>
@@ -399,9 +421,9 @@ function Home({
               <span className="inbox-body">
                 <span className="inbox-top">
                   <strong>{m.from}</strong>
-                  <span className="muted small">{m.time}</span>
+                  <span className="muted small">{t(m.time)}</span>
                 </span>
-                <span className="inbox-text">{m.text}</span>
+                <span className="inbox-text">{t(m.text)}</span>
               </span>
             </button>
           </li>
@@ -420,18 +442,29 @@ function MessageView({
   onBack: () => void;
   onPay: () => void;
 }) {
+  const { lang, t } = useLanguage();
+  const [original, setOriginal] = useState(false);
+  const translated = lang !== "en";
   return (
     <div className="phone-page-body">
       <AppBar title={message.from} onBack={onBack} />
       <div className="thread">
-        <p className="bubble">{message.text}</p>
+        <p className="bubble" lang={translated && !original ? lang : "en"}>
+          {original ? message.text : t(message.text)}
+        </p>
         <span className="muted small">
-          {message.channel} · {message.time}
+          {message.channel} · {t(message.time)}
         </span>
+        {translated && (
+          <button type="button" className="link-button small" onClick={() => setOriginal(!original)}>
+            <Icon name="translate" />
+            {original ? t("Show translation") : t("Translated from English · Show original")}
+          </button>
+        )}
       </div>
       <div className="phone-footer">
         <button type="button" className="primary wide" onClick={onPay}>
-          Pay {formatRupees(message.amount)} to {message.payee.vpa}
+          {t("Pay {0} to {1}", [formatRupees(message.amount), message.payee.vpa])}
         </button>
       </div>
     </div>
@@ -439,6 +472,7 @@ function MessageView({
 }
 
 function UpiIdEntry({ onBack, onNext }: { onBack: () => void; onNext: (vpa: string) => void }) {
+  const { t } = useLanguage();
   const [vpa, setVpa] = useState("");
   const valid = VPA.test(vpa);
   function submit(event: FormEvent) {
@@ -447,9 +481,9 @@ function UpiIdEntry({ onBack, onNext }: { onBack: () => void; onNext: (vpa: stri
   }
   return (
     <form className="phone-page-body" onSubmit={submit}>
-      <AppBar title="Pay UPI ID" onBack={onBack} />
+      <AppBar title={t("Pay UPI ID")} onBack={onBack} />
       <label className="phone-field">
-        UPI ID
+        {t("UPI ID")}
         <input
           autoFocus
           value={vpa}
@@ -460,11 +494,11 @@ function UpiIdEntry({ onBack, onNext }: { onBack: () => void; onNext: (vpa: stri
         />
       </label>
       <p className="muted small">
-        Try any new ID, e.g. <code>aarav.pandit.00720@synthbank</code>
+        {t("Try any new ID, e.g. {0}", ["aarav.pandit.00720@synthbank"])}
       </p>
       <div className="phone-footer">
         <button type="submit" className="primary wide" disabled={!valid}>
-          Continue
+          {t("Continue")}
         </button>
       </div>
     </form>
@@ -482,6 +516,7 @@ function AmountEntry({
   onBack: () => void;
   onPay: (draft: Draft) => void;
 }) {
+  const { lang, t } = useLanguage();
   const [amount, setAmount] = useState(draft.amount ? String(draft.amount) : "");
   const [note, setNote] = useState(draft.note);
   const value = Number(amount);
@@ -495,18 +530,18 @@ function AmountEntry({
       <AppBar title="" onBack={onBack} />
       <div className="payee-head">
         <Avatar name={draft.payee.name} />
-        <strong>Paying {draft.payee.name}</strong>
+        <strong>{t("Paying {0}", [draft.payee.name])}</strong>
         <span className="muted small">{draft.payee.vpa}</span>
         {draft.qr && (
           <span className="chip-note">
             <Icon name="qr_code_2" />
-            From a QR code{draft.qr.merchantCode ? " · shop" : ""}
+            {draft.qr.merchantCode ? t("From a shop's QR code") : t("From a QR code")}
           </span>
         )}
         {draft.payee.addedMinutesAgo === 0 && !draft.qr && (
           <span className="chip-note">
             <Icon name="person" />
-            First payment to this UPI ID
+            {t("First payment to this UPI ID")}
           </span>
         )}
       </div>
@@ -527,14 +562,21 @@ function AmountEntry({
       </label>
       <label className="note-field">
         <span className="sr-only">Note</span>
-        <input value={note} placeholder="Add a note" onChange={(e) => setNote(e.target.value)} />
+        <input
+          value={note}
+          lang={lang}
+          placeholder={t("Add a note")}
+          onChange={(e) => setNote(e.target.value)}
+        />
       </label>
       {draft.message && (
         <div className="linked-message">
           <Icon name="sms" />
           <span>
-            <strong>Paying from a message by {draft.message.from}</strong>
-            <span className="muted small">TrustShield checks the message that led to this payment.</span>
+            <strong>{t("Paying from a message by {0}", [draft.message.from])}</strong>
+            <span className="muted small">
+              {t("TrustShield checks the message that led to this payment.")}
+            </span>
           </span>
         </div>
       )}
@@ -545,7 +587,7 @@ function AmountEntry({
           {PERSONA.bank} {PERSONA.account}
         </span>
         <button type="submit" className="primary wide" disabled={!(value > 0)}>
-          Proceed to pay
+          {t("Proceed to pay")}
         </button>
       </div>
     </form>
@@ -553,20 +595,19 @@ function AmountEntry({
 }
 
 function Checking({ draft }: { draft: Draft }) {
+  const { t } = useLanguage();
   const steps = [
-    draft.message ? "Reading the message behind this payment" : "Looking for scam signs",
-    draft.qr ? "Checking the QR code's owner" : "Checking the recipient",
-    "Comparing with your usual payments",
+    t(draft.message ? "Reading the message behind this payment" : "Looking for scam signs"),
+    t(draft.qr ? "Checking the QR code's owner" : "Checking the recipient"),
+    t("Comparing with your usual payments"),
   ];
   return (
     <div className="checking" role="status" aria-live="polite">
       <span className="checking-shield">
         <ShieldMark size={44} />
       </span>
-      <h2>TrustShield is checking this payment</h2>
-      <p className="muted">
-        {formatRupees(draft.amount)} to {draft.payee.name}
-      </p>
+      <h2>{t("TrustShield is checking this payment")}</h2>
+      <p className="muted">{t("{0} to {1}", [formatRupees(draft.amount), draft.payee.name])}</p>
       <ul className="checking-steps">
         {steps.map((s, i) => (
           <li key={s} style={{ animationDelay: `${i * 350}ms` }}>
@@ -598,6 +639,7 @@ function Verdict({
   onContinue: () => void;
   onSimulated: (text: string) => void;
 }) {
+  const { t } = useLanguage();
   const head = VERDICT_HEAD[result.decision] ?? VERDICT_HEAD.WARN;
   const held = result.decision === "HOLD_AND_ESCALATE";
   const stepUp = result.decision === "STEP_UP_VERIFICATION";
@@ -606,20 +648,18 @@ function Verdict({
     <article className={`phone-page-body verdict-screen tone-${head.tone}`} aria-label="TrustShield check">
       <div className="verdict-head">
         <Icon name={head.icon} className="result-icon" />
-        <h2>{head.title}</h2>
-        <p className="muted small">
-          {formatRupees(draft.amount)} to {draft.payee.vpa}
-        </p>
+        <h2>{t(head.title)}</h2>
+        <p className="muted small">{t("{0} to {1}", [formatRupees(draft.amount), draft.payee.vpa])}</p>
       </div>
-      <p className="sheet-message">{result.customer_message}</p>
+      <p className="sheet-message">{t(result.customer_message)}</p>
       {(result.top_signals?.length ?? 0) > 0 && (
         <>
-          <h3>Why we're checking</h3>
+          <h3>{t("Why we're checking")}</h3>
           <ul className="signals">
             {result.top_signals?.map((s) => (
               <li key={s.code}>
-                <strong>{s.label}</strong>
-                <span>{s.plain_explanation}</span>
+                <strong>{t(s.label)}</strong>
+                <span>{t(s.plain_explanation)}</span>
               </li>
             ))}
           </ul>
@@ -628,13 +668,14 @@ function Verdict({
       {stepUp && (
         <label className="check confirm-check">
           <input type="checkbox" checked={confirmed} onChange={(e) => setConfirmed(e.target.checked)} />
-          I've confirmed this person and this payment through a phone number or contact I already
-          trust.
+          {t(
+            "I've confirmed this person and this payment through a phone number or contact I already trust.",
+          )}
         </label>
       )}
       <div className="phone-footer stacked">
         <button type="button" className="primary wide" onClick={onCancel}>
-          Cancel this payment
+          {t("Cancel this payment")}
         </button>
         {result.safe_actions
           ?.filter((a) => a.code === "contact_bank_official" || a.code === "report_scam")
@@ -643,10 +684,10 @@ function Verdict({
               key={a.code}
               type="button"
               className="secondary wide"
-              onClick={() => onSimulated(`Simulated: “${a.label}”.`)}
+              onClick={() => onSimulated(t(a.label))}
             >
               {a.code === "contact_bank_official" && <Icon name="call" />}
-              {a.label}
+              {t(a.label)}
             </button>
           ))}
         {!held && (
@@ -656,13 +697,13 @@ function Verdict({
             disabled={stepUp && !confirmed}
             onClick={onContinue}
           >
-            {stepUp ? "I've verified it, continue" : "I know them, continue"}
+            {t(stepUp ? "I've verified it, continue" : "I know them, continue")}
           </button>
         )}
       </div>
       {result.case_id && (
         <p className="muted small">
-          A safety specialist will review this payment. Case reference {result.case_id}.
+          {t("A safety specialist will review this payment. Case reference {0}.", [result.case_id])}
         </p>
       )}
     </article>
@@ -683,6 +724,7 @@ function PinPad({
   onBack: () => void;
   onDone: () => void;
 }) {
+  const { t } = useLanguage();
   const [count, setCount] = useState(0);
   const [processing, setProcessing] = useState(false);
   const press = (key: string) => {
@@ -716,23 +758,24 @@ function PinPad({
         </span>
       </div>
       <div className="pin-summary">
-        <span className="muted small">To {draft.payee.name}</span>
+        <span className="muted small">{t("To {0}", [draft.payee.name])}</span>
         <strong>{formatRupees(draft.amount)}</strong>
         {result.decision === "ALLOW" ? (
           <span className="badge badge-ok">
             <Icon name="verified" />
-            Checked by TrustShield
+            {t("Checked by TrustShield")}
           </span>
         ) : (
-          <span className="badge badge-caution">Continuing after a TrustShield warning</span>
+          <span className="badge badge-caution">{t("Continuing after a TrustShield warning")}</span>
         )}
       </div>
       <p className="pin-demo" role="note">
         <Icon name="lock" />
-        Demo only: enter any 6-digit PIN (e.g. 123456). Never use your real UPI PIN here; nothing is
-        stored.
+        {t(
+          "Demo only: enter any 6-digit PIN (e.g. 123456). Never use your real UPI PIN here; nothing is stored.",
+        )}
       </p>
-      <h2 className="pin-title">{processing ? "Processing…" : "Enter UPI PIN"}</h2>
+      <h2 className="pin-title">{t(processing ? "Processing…" : "Enter UPI PIN")}</h2>
       <div className="pin-dots" aria-label={`${count} of ${PIN_LENGTH} digits entered`}>
         {Array.from({ length: PIN_LENGTH }, (_, i) => (
           <span key={i} className={i < count ? "dot filled" : "dot"} />
@@ -769,35 +812,36 @@ function Paid({
   at: Date;
   onDone: () => void;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="phone-page-body done-screen tone-ok" aria-label="Payment successful">
       <Icon name="check_circle" className="done-icon" />
-      <h2>{formatRupees(draft.amount)} paid</h2>
-      <p>to {draft.payee.name}</p>
+      <h2>{t("{0} paid", [formatRupees(draft.amount)])}</h2>
+      <p>{t("to {0}", [draft.payee.name])}</p>
       <dl className="receipt">
         <div>
-          <dt>UPI ID</dt>
+          <dt>{t("UPI ID")}</dt>
           <dd>{draft.payee.vpa}</dd>
         </div>
         <div>
-          <dt>UPI ref. no.</dt>
+          <dt>{t("UPI ref. no.")}</dt>
           <dd>{upiRef}</dd>
         </div>
         <div>
-          <dt>Time</dt>
+          <dt>{t("Time")}</dt>
           <dd>{at.toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })}</dd>
         </div>
         {result.audit_id && (
           <div>
-            <dt>TrustShield check</dt>
+            <dt>{t("TrustShield check")}</dt>
             <dd>{result.audit_id}</dd>
           </div>
         )}
       </dl>
-      <p className="muted small">Simulated payment: no real money moved.</p>
+      <p className="muted small">{t("Simulated payment: no real money moved.")}</p>
       <div className="phone-footer">
         <button type="button" className="primary wide" onClick={onDone}>
-          Done
+          {t("Done")}
         </button>
       </div>
     </div>
@@ -813,22 +857,29 @@ function Cancelled({
   result: PaymentRiskResponse;
   onDone: () => void;
 }) {
+  const { t } = useLanguage();
   return (
     <div className="phone-page-body done-screen tone-neutral" aria-label="Payment cancelled">
       <Icon name="task_alt" className="done-icon" />
-      <h2>Payment cancelled</h2>
+      <h2>{t("Payment cancelled")}</h2>
       <p>
-        {formatRupees(draft.amount)} to {draft.payee.vpa} was not sent. No money left your account.
+        {t("{0} to {1} was not sent. No money left your account.", [
+          formatRupees(draft.amount),
+          draft.payee.vpa,
+        ])}
       </p>
       <p className="muted small">
-        If someone is pressuring you to pay, stop and call your bank on the number on its official
-        app or card.
+        {t(
+          "If someone is pressuring you to pay, stop and call your bank on the number on its official app or card.",
+        )}
       </p>
-      {result.case_id && <p className="muted small">Case reference {result.case_id}</p>}
-      {result.audit_id && <p className="muted small">Check reference {result.audit_id}</p>}
+      {result.case_id && <p className="muted small">{t("Case reference {0}", [result.case_id])}</p>}
+      {result.audit_id && (
+        <p className="muted small">{t("Check reference {0}", [result.audit_id])}</p>
+      )}
       <div className="phone-footer">
         <button type="button" className="primary wide" onClick={onDone}>
-          Back to home
+          {t("Back to home")}
         </button>
       </div>
     </div>
@@ -836,25 +887,67 @@ function Cancelled({
 }
 
 function NotAPayment({ qr, onDone }: { qr: OtherQr; onDone: () => void }) {
+  const { t } = useLanguage();
   const what =
     qr.reason === "link"
-      ? `It opens a website (${hostOf(qr.raw)}), not a payment.`
-      : "It isn't a normal payment to a shop or person.";
+      ? t("It opens a website ({0}), not a payment.", [hostOf(qr.raw)])
+      : t("It isn't a normal payment to a shop or person.");
   return (
     <div className="phone-page-body verdict-screen tone-danger" aria-label="QR check result">
       <div className="verdict-head">
         <Icon name="gpp_bad" className="result-icon" />
-        <h2>This QR code isn't a payment</h2>
+        <h2>{t("This QR code isn't a payment")}</h2>
       </div>
       <p className="sheet-message">
-        {what} Don't pay, sign in, or share any details from it. If someone sent it to you, check
-        with them through a contact you already trust.
+        {what}{" "}
+        {t(
+          "Don't pay, sign in, or share any details from it. If someone sent it to you, check with them through a contact you already trust.",
+        )}
       </p>
       <div className="phone-footer">
         <button type="button" className="primary wide" onClick={onDone}>
-          Back to home
+          {t("Back to home")}
         </button>
       </div>
+    </div>
+  );
+}
+
+/** Settings → Language, as in a real UPI app. Every language is offered in its own script. */
+function LanguageScreen({ onDone }: { onDone: () => void }) {
+  const { lang, setLang, t, translating, unavailable } = useLanguage();
+  return (
+    <div className="phone-page-body" aria-label="Choose language">
+      <AppBar title={t("Language")} onBack={onDone} />
+      <p className="muted small">{t("Choose the language for this app.")}</p>
+      <ul className="lang-list" role="listbox" aria-label="Languages">
+        {LANGUAGES.map((l) => (
+          <li key={l.code}>
+            <button
+              type="button"
+              role="option"
+              aria-selected={l.code === lang}
+              className={l.code === lang ? "lang-option selected" : "lang-option"}
+              onClick={() => {
+                setLang(l.code);
+                onDone();
+              }}
+            >
+              <span lang={l.code}>{l.native}</span>
+              <span className="muted small">{l.english}</span>
+              {l.code === lang && <Icon name="check" className="lang-check" />}
+            </button>
+          </li>
+        ))}
+      </ul>
+      <p className="muted small lang-credit">
+        <Icon name="translate" />
+        {translating
+          ? t("Translating…")
+          : unavailable
+            ? "Translation is unavailable right now; showing English."
+            : "Translated by Google Cloud Translation"}
+      </p>
     </div>
   );
 }

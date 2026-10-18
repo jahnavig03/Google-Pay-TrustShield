@@ -2,11 +2,19 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
-from ..ports import DocumentStore, Publisher
-from ..settings import doc_store_backend, mode, project_id, publisher_backend
+from ..ports import DocumentStore, Publisher, Translator
+from ..settings import (
+    doc_store_backend,
+    mode,
+    project_id,
+    publisher_backend,
+    translation_project_id,
+    translator_backend,
+)
 from .memory_store import MemoryDocumentStore
+from .mock_translator import MockTranslator
 from .noop_publisher import NoopPublisher
 
 
@@ -17,6 +25,7 @@ class Services:
     publisher: Publisher
     store_backend: str
     publisher_backend: str
+    translator: Translator = field(default_factory=MockTranslator)
 
 
 def build_services() -> Services:
@@ -45,4 +54,16 @@ def build_services() -> Services:
             f"TRUSTSHIELD_PUBLISHER must be 'pubsub' or 'noop', got {publisher_kind!r}"
         )
 
-    return Services(current_mode, store, publisher, store_kind, publisher_kind)
+    translator_kind = translator_backend()
+    if translator_kind == "google":
+        from .google_translator import GoogleTranslator
+
+        translator: Translator = GoogleTranslator(translation_project_id())
+    elif translator_kind == "mock":
+        translator = MockTranslator()
+    else:
+        raise ValueError(
+            f"TRUSTSHIELD_TRANSLATOR must be 'google' or 'mock', got {translator_kind!r}"
+        )
+
+    return Services(current_mode, store, publisher, store_kind, publisher_kind, translator)

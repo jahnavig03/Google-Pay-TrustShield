@@ -19,6 +19,7 @@ from .cases import (
 )
 from .merchant import MerchantVerifyRequest, MerchantVerifyResponse
 from .payment import PaymentRiskRequest, PaymentRiskResponse
+from .translate import TranslateRequest, TranslateResponse
 
 API_PREFIX = "/api/v1"
 
@@ -86,5 +87,14 @@ ENDPOINTS: tuple[Endpoint, ...] = (
         "investigator",
         CaseDecisionResponse,
         AnalystDecisionRequest,
+    ),
+    Endpoint(
+        "POST",
+        f"{API_PREFIX}/translate",
+        "translateTexts",
+        "Translate app text into the customer's language",
+        "language",
+        TranslateResponse,
+        TranslateRequest,
     ),
 )

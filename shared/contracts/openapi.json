@@ -254,6 +254,47 @@
           }
         }
       }
+    },
+    "/api/v1/translate": {
+      "post": {
+        "tags": [
+          "language"
+        ],
+        "summary": "Translate app text into the customer's language",
+        "operationId": "translateTexts",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TranslateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranslateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1167,6 +1208,67 @@
           "description"
         ],
         "title": "TimelineEvent"
+      },
+      "TranslateRequest": {
+        "properties": {
+          "target_language": {
+            "type": "string",
+            "title": "Target Language",
+            "examples": [
+              "hi"
+            ]
+          },
+          "texts": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Texts",
+            "examples": [
+              [
+                "Proceed to pay"
+              ]
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_language",
+          "texts"
+        ],
+        "title": "TranslateRequest"
+      },
+      "TranslateResponse": {
+        "properties": {
+          "target_language": {
+            "type": "string",
+            "title": "Target Language"
+          },
+          "translations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Translations"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider",
+            "examples": [
+              "google-cloud-translation"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "target_language",
+          "translations",
+          "provider"
+        ],
+        "title": "TranslateResponse",
+        "description": "``translations[i]`` is ``texts[i]`` in ``target_language`` (same order, same length)."
       },
       "ValidationError": {
         "properties": {
