@@ -14,7 +14,7 @@ white). No Google or Google Pay logos, no multi-colour brand mark, no copied scr
 | Route | Who | What |
 | --- | --- | --- |
 | `/` | everyone | Landing: logo, name, and two ways in |
-| `/customer` | customer | Choose Payment simulator or Merchant check (one-line descriptions) |
+| `/customer` | customer | Choose Payment check or Merchant check (one-line descriptions) |
 | `/customer/pay`, `/customer/merchant` | customer | Tabbed panel with only these two sections, opened on the chosen one |
 | `/analyst/login` | analyst | Analyst ID + access code |
 | `/analyst`, `/analyst/:caseId` | analyst (signed in) | Case queue (summary tiles, filters, search) and case detail (risk meter, tabs: Overview, Timeline, Accounts, Evidence & Q&A, Decision) |
@@ -28,7 +28,15 @@ protection = Firebase Auth or IAP in front of the analyst routes (PRD §7). The 
 `sessionStorage`, so closing the tab signs out; decisions are recorded under the signed-in
 analyst ID.
 
-## QR scanning (Payment simulator)
+## Phone payment app
+
+`/customer/app` (`src/phone/`) is a simulated UPI app ("SynthPay") with TrustShield built in: home
+screen with contacts and an SMS/chat inbox, Scan QR, Pay UPI ID, amount entry, the TrustShield check,
+then allow → dummy PIN pad → receipt, warn → continue or cancel, step-up → confirm you verified, hold →
+paused (no PIN). One synthetic customer and her messages live in `src/phone/scenarios.ts`. The PIN
+pad keeps only the number of taps; digits are never stored or sent.
+
+## QR scanning (Payment check)
 
 **Scan QR** (next to "Pay to") opens a dialog: upload a photo, use the camera, or pick a sample QR
 (`public/demo-qr/*.png`, synthetic). Decoding runs on the device with `jsQR`; the image is never

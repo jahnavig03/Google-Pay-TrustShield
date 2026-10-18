@@ -169,7 +169,7 @@ export function PayPage() {
   return (
     <section className="page">
       <header className="page-header compact">
-        <h1>Payment simulator</h1>
+        <h1>Payment check</h1>
         <p className="muted">
           Try a UPI payment or scan a QR. TrustShield checks it before it goes through.
         </p>

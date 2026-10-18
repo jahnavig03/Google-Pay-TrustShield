@@ -15,7 +15,8 @@ interface NavItem {
 }
 
 const CUSTOMER_NAV: NavItem[] = [
-  { to: "/customer/pay", label: "Payment simulator", icon: "payments" },
+  { to: "/customer/app", label: "Phone app", icon: "smartphone" },
+  { to: "/customer/pay", label: "Payment check", icon: "payments" },
   { to: "/customer/merchant", label: "Merchant check", icon: "storefront" },
 ];
 

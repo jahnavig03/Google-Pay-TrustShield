@@ -37,7 +37,7 @@ describe("theme toggle", () => {
     renderApp("/");
     await userEvent.click(screen.getByRole("button", { name: "Switch to dark mode" }));
     await userEvent.click(screen.getByRole("link", { name: /Continue as customer/ }));
-    await userEvent.click(screen.getByRole("link", { name: /Payment simulator/ }));
+    await userEvent.click(screen.getByRole("link", { name: /Payment check/ }));
     expect(document.documentElement.dataset.theme).toBe("dark");
     expect(screen.getByRole("button", { name: "Switch to light mode" })).toBeVisible();
   });

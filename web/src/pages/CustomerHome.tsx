@@ -9,9 +9,16 @@ export function CustomerHome() {
         What would you like to do?
       </h1>
       <div className="choice-grid">
+        <Link to="/customer/app" className="choice-card">
+          <Icon name="smartphone" className="choice-icon" />
+          <span className="choice-title">Phone payment app</span>
+          <span className="choice-text">
+            Pay like you would on your phone, with TrustShield built in.
+          </span>
+        </Link>
         <Link to="/customer/pay" className="choice-card">
           <Icon name="payments" className="choice-icon" />
-          <span className="choice-title">Payment simulator</span>
+          <span className="choice-title">Payment check</span>
           <span className="choice-text">
             Try a UPI payment and see whether TrustShield pauses it, and why.
           </span>
