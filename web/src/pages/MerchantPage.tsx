@@ -11,7 +11,6 @@ import {
   Badge,
   ErrorNotice,
   Icon,
-  RoleNotice,
   Spinner,
   formatDateTime,
   formatRupees,
@@ -28,6 +27,50 @@ const STATUS: Record<string, { label: string; tone: string; icon: string }> = {
   not_found_in_ledger: { label: "Not found in ledger", tone: "warning", icon: "search_off" },
   suspicious: { label: "Suspicious", tone: "danger", icon: "gpp_bad" },
 };
+
+/** Synthetic screenshots from the mock ledger data (data/ generator), one per outcome. */
+const SYNTHETIC = "gs://trustshield-demo-uploads/synthetic";
+const EXAMPLES: { id: string; label: string; hint: string; request: MerchantVerifyRequest }[] = [
+  {
+    id: "demo3",
+    label: "Demo 3 · fake ₹12k",
+    hint: "₹12,000 'payment successful' screenshot that never settled (edited)",
+    request: demo3.request,
+  },
+  {
+    id: "genuine",
+    label: "Genuine ₹1,488",
+    hint: "A real, settled payment",
+    request: {
+      merchant_id: "MER-DEMO-0042",
+      uploaded_screenshot: `${SYNTHETIC}/screenshot_003.png`,
+      claimed_amount: 1488,
+      claimed_transaction_id: "422056521795",
+    },
+  },
+  {
+    id: "edited",
+    label: "Edited amount ₹21,040",
+    hint: "A real payment whose amount was edited upwards",
+    request: {
+      merchant_id: "MER-DEMO-0042",
+      uploaded_screenshot: `${SYNTHETIC}/screenshot_021.png`,
+      claimed_amount: 21040,
+      claimed_transaction_id: "612387207758",
+    },
+  },
+  {
+    id: "missing",
+    label: "Not in ledger ₹6,150",
+    hint: "A clean-looking screenshot with no matching credit",
+    request: {
+      merchant_id: "MER-DEMO-0042",
+      uploaded_screenshot: `${SYNTHETIC}/screenshot_019.png`,
+      claimed_amount: 6150,
+      claimed_transaction_id: "305774841834",
+    },
+  },
+];
 
 const EMPTY: MerchantVerifyRequest = {
   merchant_id: "MER-DEMO-0042",
@@ -72,9 +115,9 @@ export function MerchantPage() {
     setForm((prev) => ({ ...prev, uploaded_screenshot: uri }));
   }
 
-  function loadDemo3() {
-    setForm({ ...demo3.request });
-    setFileName(demo3.request.uploaded_screenshot);
+  function loadExample(request: MerchantVerifyRequest) {
+    setForm({ ...request });
+    setFileName(request.uploaded_screenshot.split("/").pop() ?? request.uploaded_screenshot);
     setFileError(null);
     verify.reset();
   }
@@ -99,14 +142,23 @@ export function MerchantPage() {
           before you hand over the goods.
         </p>
       </header>
-      <RoleNotice needs="merchant" />
 
       <div className="two-col">
         <form className="card form" onSubmit={submit} aria-label="Screenshot check">
-          <button type="button" className="preset" onClick={loadDemo3}>
-            <strong>Demo 3: ₹12,000 screenshot</strong>
-            <span>Screenshot that never settled</span>
-          </button>
+          <fieldset className="preset-row">
+            <legend>Try an example</legend>
+            {EXAMPLES.map((ex) => (
+              <button
+                key={ex.id}
+                type="button"
+                className="chip"
+                title={ex.hint}
+                onClick={() => loadExample(ex.request)}
+              >
+                {ex.label}
+              </button>
+            ))}
+          </fieldset>
           <label>
             Merchant ID
             <input
@@ -152,7 +204,7 @@ export function MerchantPage() {
           {verify.data && <Verdict result={verify.data} />}
           {verify.isIdle && (
             <div className="card empty">
-              <p className="muted">Load demo 3 or upload a screenshot, then press Check payment.</p>
+              <p className="muted">Pick an example or upload a screenshot, then press Check payment.</p>
             </div>
           )}
         </div>

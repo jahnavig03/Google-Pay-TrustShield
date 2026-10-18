@@ -55,3 +55,25 @@ def test_endpoint_paths():
         ("POST", "/api/v1/cases/{case_id}/ask"),
         ("POST", "/api/v1/cases/{case_id}/decision"),
     }
+
+
+def test_qr_field_is_optional_and_validated():
+    from trustshield_contracts import QrPayload
+
+    base = {
+        "transaction_id": "t1",
+        "amount": 40,
+        "payer_id": "p1",
+        "payee_vpa": "a@synthbank",
+        "beneficiary_age_minutes": 10,
+    }
+    assert PaymentRiskRequest(**base).qr is None
+    req = PaymentRiskRequest(
+        **base,
+        qr={
+            "raw": "upi://pay?pa=a@synthbank&pn=A&cu=INR",
+            "payee_name": "A",
+            "merchant_code": "5812",
+        },
+    )
+    assert isinstance(req.qr, QrPayload) and req.qr.payee_name == "A"

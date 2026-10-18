@@ -343,6 +343,8 @@ export interface components {
              * @description gs:// or https:// URI of an uploaded screenshot, QR or transcript.
              */
             attachment_uri?: string | null;
+            /** @description Set when the payee came from a scanned / uploaded QR code. */
+            qr?: components["schemas"]["QrPayload"] | null;
         };
         /**
          * PaymentRiskResponse
@@ -396,6 +398,35 @@ export interface components {
             snippet: string;
             /** Uri */
             uri?: string | null;
+        };
+        /**
+         * QrPayload
+         * @description What the customer's app decoded from a scanned / uploaded UPI QR code.
+         *
+         *     Decoding happens on the device; only these fields are sent. A UPI QR holds
+         *     ``upi://pay?pa=<vpa>&pn=<name>&am=<amount>&cu=INR&mc=<merchant code>``.
+         */
+        QrPayload: {
+            /**
+             * Raw
+             * @description The full decoded QR text.
+             */
+            raw: string;
+            /**
+             * Payee Name
+             * @description pn= in the QR.
+             */
+            payee_name?: string | null;
+            /**
+             * Amount
+             * @description am= in the QR, if fixed.
+             */
+            amount?: number | null;
+            /**
+             * Merchant Code
+             * @description mc= (merchant category code), if present.
+             */
+            merchant_code?: string | null;
         };
         /**
          * RiskLevel

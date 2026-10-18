@@ -55,6 +55,21 @@ class SafeAction(BaseModel):
     label: str = Field(examples=["Cancel this payment"])
 
 
+class QrPayload(BaseModel):
+    """What the customer's app decoded from a scanned / uploaded UPI QR code.
+
+    Decoding happens on the device; only these fields are sent. A UPI QR holds
+    ``upi://pay?pa=<vpa>&pn=<name>&am=<amount>&cu=INR&mc=<merchant code>``.
+    """
+
+    raw: str = Field(max_length=2048, description="The full decoded QR text.")
+    payee_name: str | None = Field(default=None, max_length=120, description="pn= in the QR.")
+    amount: float | None = Field(default=None, gt=0, description="am= in the QR, if fixed.")
+    merchant_code: str | None = Field(
+        default=None, max_length=8, description="mc= (merchant category code), if present."
+    )
+
+
 class PaymentRiskRequest(BaseModel):
     """Compatible with the gateway's original request; only optional fields are added."""
 
@@ -71,6 +86,9 @@ class PaymentRiskRequest(BaseModel):
     attachment_uri: str | None = Field(
         default=None,
         description="gs:// or https:// URI of an uploaded screenshot, QR or transcript.",
+    )
+    qr: QrPayload | None = Field(
+        default=None, description="Set when the payee came from a scanned / uploaded QR code."
     )
 
 

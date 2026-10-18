@@ -3,12 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="TrustShield prototype simulator. Synthetic data only. Not affiliated with Google Pay." />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z' fill='%233857bd'/%3E%3C/svg%3E" />
+    <meta name="color-scheme" content="light dark" />
+    <script>
+      // Apply the saved theme (or the system one) before first paint: no flash of the wrong mode.
+      (function () {
+        var theme = "light";
+        try {
+          var saved = localStorage.getItem("trustshield.theme");
+          theme = saved === "light" || saved === "dark" ? saved
+            : matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        } catch (e) {}
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <meta name="description" content="TrustShield, built exclusively for the Google Cloud AI Builder Cup. Prototype simulator, synthetic data only. Not affiliated with Google Pay." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Z' fill='%23202124'/%3E%3C/svg%3E" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono&display=swap" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0..1,0&icon_names=check_circle,error,gpp_bad,info,pan_tool,payments,policy,schedule,search_off,storefront,verified,warning&display=block" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0..1,0&icon_names=account_circle,add_photo_alternate,alternate_email,arrow_back,badge,call,check,check_circle,close,dark_mode,error,gavel,gpp_bad,hub,info,insights,light_mode,lightbulb,link,logout,manage_search,menu_book,pan_tool,payments,pending_actions,person,photo_camera,policy,qr_code_2,qr_code_scanner,schedule,search,search_off,shield_person,smartphone,speed,storefront,sync,task_alt,timeline,upload,verified,warning&display=block" />
     <title>TrustShield simulator</title>
   </head>
   <body>

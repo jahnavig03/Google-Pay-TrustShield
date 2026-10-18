@@ -4,7 +4,6 @@ import { MemoryRouter } from "react-router-dom";
 import { vi } from "vitest";
 
 import { App } from "../App";
-import type { Role } from "../api/client";
 
 export interface Call {
   method: string;
@@ -19,7 +18,11 @@ type Handler = (call: Call) => { status?: number; body: unknown };
 export function mockGateway(routes: Record<string, Handler>) {
   const calls: Call[] = [];
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
-    const request = input instanceof Request ? input : new Request(input, init);
+    // Relative URLs (e.g. /demo-qr/*.png) resolve against the page origin, as in a browser.
+    const request =
+      input instanceof Request
+        ? input
+        : new Request(new URL(String(input), "http://localhost"), init);
     const url = new URL(request.url);
     const text = await request.clone().text();
     const call: Call = {
@@ -41,13 +44,17 @@ export function mockGateway(routes: Record<string, Handler>) {
   return { calls, fetchMock };
 }
 
-export function renderApp(path: string, role: Role) {
+/** Render the whole app at `path`. `analystId` pre-signs-in an analyst (session storage). */
+export function renderApp(path: string, options: { analystId?: string } = {}) {
+  if (options.analystId) {
+    window.sessionStorage.setItem("trustshield.analystSession", options.analystId);
+  }
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   return render(
     <MemoryRouter initialEntries={[path]}>
-      <App queryClient={queryClient} initialRole={role} />
+      <App queryClient={queryClient} />
     </MemoryRouter>,
   );
 }
